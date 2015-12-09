@@ -28,12 +28,14 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 	
 	internal val mapData: Array<WorldObject>
 	internal val turnLog: ArrayList<String>
+	internal var win: Int
 	
 	init {
 //		TODO: isSolid = false wont work properly with the movement system
 //		so long as the only isSolid false thing is WorldNothing
 		this.mapData = Array(width * height, { index -> generator.getObjectAt(index % width, index / width, this)})
 		this.turnLog = ArrayList<String>()
+		this.win = -1
 	}
 	
 	/**
@@ -301,7 +303,9 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 	override fun equals(other: Any?): Boolean {
 		if (other == null) return false
 		if (other !is World) return false
-		return mapData.equals(other.mapData) && turnLog.equals(other.turnLog)
+		return 	mapData.equals(other.mapData) && 
+				turnLog.equals(other.turnLog) && 
+				win == other.win
 	}
 	
 	override fun hashCode(): Int {

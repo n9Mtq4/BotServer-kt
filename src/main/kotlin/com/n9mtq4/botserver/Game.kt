@@ -78,9 +78,17 @@ class Game : Runnable {
 			
 			gameWriter.tick() // write this turn's data
 			world.tick() // tick the world
+//			check if a team has won
+			if (world.win > 0) {
+//				a team has!
+				gameWriter.printWriter.println("WIN ${world.win}") // record their winning
+				break; // end the game
+			}
 			turnNumber++ // next turn
 			
 		}
+		
+		gameWriter.printWriter.println("DRAW") // no one wins :(
 		
 	}
 	
