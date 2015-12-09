@@ -168,6 +168,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		val target = world.findObjectUsingRayCasting(x, y, angle) // find the first target
 		if (target.obj is HealthWorldObject) target.obj.dealDamage(SHOOT_DAMAGE) // if we can shoot it, then shoot it
 //		TODO: add this to the turn file, so we can see the shot
+		world.turnLog.add("$x, $y, $angle")
 		
 	}
 	

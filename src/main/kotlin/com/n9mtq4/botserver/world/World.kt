@@ -288,6 +288,12 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 		return data
 	}
 	
+	internal fun turnLogToGraphicsString(): String {
+		var data = ""
+		turnLog.forEach { data += it + " " }
+		return data.trim()
+	}
+	
 	override fun toString(): String {
 		return Arrays.toString(mapData)
 	}

@@ -51,8 +51,9 @@ class Game : Runnable {
 	 * */
 	fun initConnections() {
 		
-		val team1Connection = ClientConnection(serverSocket, SocketEncoders.KotlinClient, SocketDecoders.KotlinClient)
-		val team2Connection = ClientConnection(serverSocket, SocketEncoders.KotlinClient, SocketDecoders.KotlinClient)
+//		TODO: change to KotlinClient when there are unique features
+		val team1Connection = ClientConnection(serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
+		val team2Connection = ClientConnection(serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
 		
 		team1 = Team(1, team1Connection)
 		team2 = Team(2, team2Connection)

@@ -1,3 +1,5 @@
+@file:JvmName("BotServer")
+
 package com.n9mtq4.botserver
 
 /**

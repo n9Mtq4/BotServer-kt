@@ -26,7 +26,7 @@ class GameWriter(val world: World, val file: File) {
 	fun tick() {
 		
 		printWriter.println(world.toGraphicsString()) // append the data to the buffer
-//		TODO: append shooting information
+		printWriter.println(world.turnLogToGraphicsString()) // append the shots this turn to the buffer
 		printWriter.flush() // write the data
 		
 	}
