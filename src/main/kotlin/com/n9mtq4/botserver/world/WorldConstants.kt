@@ -7,3 +7,4 @@ package com.n9mtq4.botserver.world
  */
 val WORLD_WIDTH = 64
 val WORLD_HEIGHT = 128
+val BOTS_TO_WIN = 3

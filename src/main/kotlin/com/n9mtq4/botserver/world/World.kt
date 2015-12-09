@@ -3,6 +3,7 @@ package com.n9mtq4.botserver.world
 import com.n9mtq4.botserver.bot.SeenWorldObject
 import com.n9mtq4.botserver.toRadians
 import com.n9mtq4.botserver.world.generation.WorldGeneratorBehavior
+import com.n9mtq4.botserver.world.objects.Block
 import com.n9mtq4.botserver.world.objects.WorldNothing
 import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
 import kotlin.test.assertTrue
@@ -121,6 +122,42 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 //		change the location in the map array of the world object
 		set(nx, ny, obj)
 		set(x, y, WorldNothing)
+		
+	}
+	
+	/**
+	 * Places a new block at ([x], [y])
+	 * if there isn't anything there.
+	 * 
+	 * @param x the x pos
+	 * @param y the y pos
+	 * */
+	fun placeBlock(x: Int, y: Int) {
+		
+//		make sure it's a valid coord
+		assertWorldBounds(x, y)
+		
+//		make sure there isn't something there
+		if (get(x, y) !is WorldNothing) return
+		
+//		place a block
+		forcePlaceBlock(x, y)
+		
+	}
+	
+	/**
+	 * Places a new block ([x], [y]).
+	 * 
+	 * @param x the x pos
+	 * @param y the y pos
+	 * */
+	fun forcePlaceBlock(x: Int, y: Int) {
+		
+//		make sure it's a valid coord
+		assertWorldBounds(x, y)
+		
+//		place a new block
+		set(x, y, Block(this, x, y))
 		
 	}
 	

@@ -1,6 +1,9 @@
 package com.n9mtq4.botserver.connection
 
 import com.n9mtq4.botserver.API_LEVEL
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -9,17 +12,32 @@ import java.net.Socket
  *
  * @author Will "n9Mtq4" Bresnahan
  */
-class ClientConnection(val serverSocket: ServerSocket, val team: Team) {
+class ClientConnection(val serverSocket: ServerSocket) {
 	
-	val inSocket: Socket
+	internal val client: Socket
+	internal val input: BufferedReader
+	internal val output: PrintWriter
 	
 	init {
-		this.inSocket = serverSocket.accept()
-		write("START API ${API_LEVEL}")
+		
+		this.client = serverSocket.accept()
+		this.input = BufferedReader(InputStreamReader(client.inputStream))
+		this.output = PrintWriter(client.outputStream, true)
+		
+		write("START API $API_LEVEL")
+		
 	}
 	
-	private fun write(msg: String) {
-		inSocket
+	internal fun read(): String {
+		return input.readLine()
+	}
+	
+	internal fun write(msg: String) {
+		output.print(msg)
+	}
+	
+	internal fun writeln(msg: String) {
+		output.println(msg)
 	}
 	
 }
