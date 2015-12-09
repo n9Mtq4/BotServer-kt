@@ -7,6 +7,8 @@ package com.n9mtq4.botserver.world.objects.interfaces
  * Contains an angle in degrees of
  * where the entity is facing.
  * 
+ * @see HealthWorldObject
+ * @see WorldObject
  * @author Will "n9Mtq4" Bresnahan
  */
 interface Entity : HealthWorldObject {

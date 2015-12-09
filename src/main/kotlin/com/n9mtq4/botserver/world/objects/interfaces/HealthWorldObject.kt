@@ -5,6 +5,7 @@ package com.n9mtq4.botserver.world.objects.interfaces
  * 
  * Implement this if your [WorldObject] has health
  * 
+ * @see WorldObject
  * @author Will "n9Mtq4" Bresnahan
  */
 interface HealthWorldObject : WorldObject {
@@ -16,7 +17,7 @@ interface HealthWorldObject : WorldObject {
 	/**
 	 * If this [WorldObject] should take damage right now
 	 * */
-	var invinsible: Boolean
+	var invincible: Boolean
 	
 	/**
 	 * Deals [amount] of damage to this
@@ -28,7 +29,7 @@ interface HealthWorldObject : WorldObject {
 	 * */
 	fun dealDamage(amount: Int) {
 		
-		if (invinsible) return // stop if it can't be destroyed
+		if (invincible) return // stop if it can't be destroyed
 		health -= amount // subtract from the health
 		
 		if (isDead()) world.remove(this) // remove this if it is dead

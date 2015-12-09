@@ -10,10 +10,7 @@ fun main(args: Array<String>) {
 	val game = Game()
 	println("Server started")
 	
-	game.start()
-	println("Match started")
-	
-	println("Running Game")
+	println("Starting Game")
 	game.run()
 	
 }

@@ -1,11 +1,15 @@
 package com.n9mtq4.botserver.world
 
+import com.n9mtq4.botserver.bot.Bot
 import com.n9mtq4.botserver.bot.SeenWorldObject
 import com.n9mtq4.botserver.toRadians
 import com.n9mtq4.botserver.world.generation.WorldGeneratorBehavior
 import com.n9mtq4.botserver.world.objects.Block
 import com.n9mtq4.botserver.world.objects.WorldNothing
+import com.n9mtq4.botserver.world.objects.interfaces.Tickable
 import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
+import java.util.ArrayList
+import java.util.Arrays
 import kotlin.test.assertTrue
 
 /**
@@ -13,16 +17,49 @@ import kotlin.test.assertTrue
  * 
  * A class that contains all the data of the world.
  * 
+ * @param width the world width
+ * @param height the world height
+ * @param generator the [WorldGeneratorBehavior] that should be used
+ * @see WorldGeneratorBehavior
+ * @see com.n9mtq4.botserver.world.generation.WorldGenerators
  * @author Will "n9Mtq4" Bresnahan
  */
 public class World(val width: Int, val height: Int, generator: WorldGeneratorBehavior) {
 	
-	private val mapData: Array<WorldObject>
+	internal val mapData: Array<WorldObject>
+	internal val turnLog: ArrayList<String>
 	
 	init {
 //		TODO: isSolid = false wont work properly with the movement system
 //		so long as the only isSolid false thing is WorldNothing
-		mapData = Array(width * height, { index -> generator.getObjectAt(index % width, index / width, this)})
+		this.mapData = Array(width * height, { index -> generator.getObjectAt(index % width, index / width, this)})
+		this.turnLog = ArrayList<String>()
+	}
+	
+	/**
+	 * Goes through everything in the world and calls its tick method.
+	 * The [WorldObject] must implement [Tickable].
+	 * This method should be called from the [com.n9mtq4.botserver.Game] class
+	 * 
+	 * @see Tickable
+	 * @see Tickable.tick
+	 * */
+	fun tick() {
+		mapData.filter 	{ it is Tickable }.
+				forEach { (it as Tickable).tick() }
+	}
+	
+	/**
+	 * Gets all bots that are owned by a specified team number.
+	 * 
+	 * @param teamNumber the team number (1 or 2)
+	 * */
+	fun getAllBotsByTeam(teamNumber: Int): List<Bot> {
+//		make sure the team number is 1 or 2
+		assertTrue(teamNumber == 1 || teamNumber == 2, "$teamNumber is not a valid team number")
+		return mapData.	filter 	{ it is Bot }. // only bots
+						filter 	{ it.id == teamNumber }. // only with the correct team number
+						map 	{ it as Bot } // turn the [WorldObjects] to [Bots]
 	}
 	
 	/**
@@ -57,7 +94,11 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 		var cy = y.toDouble() // the currently scanning y pos
 		
 		while (isInBounds(cx, cy)) {
+//			if the WorldObject at (cx, cy) isn't nothing, return it with the pos
 			if (get(cx, cy) !is WorldNothing) return SeenWorldObject(get(cx, cy), cx.toInt(), cy.toInt())
+//			update the ray casting location
+			cx += dx
+			cy += dy
 		}
 		
 //		we should always return something, so this is an error
@@ -111,7 +152,7 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 		assertWorldBounds(nx, ny)
 		
 //		check for collision
-		if (get(nx, ny).isSolid) return@moveAbs
+		if (get(nx, ny).isSolid) return
 		
 		val obj = get(x, y)
 		
@@ -240,5 +281,25 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 	
 	fun assertWorldBounds(x: Double, y: Double) = assertWorldBounds(x.toInt(), y.toInt())
 	fun assertWorldBounds(x: Int, y: Int) = assertTrue(isInBounds(x, y), "position ($x, $y) are not in world bounds")
+	
+	internal fun toGraphicsString(): String {
+		var data = ""
+		mapData.forEach { data += it.id } // add the [WorldObject] id to the string
+		return data
+	}
+	
+	override fun toString(): String {
+		return Arrays.toString(mapData)
+	}
+	
+	override fun equals(other: Any?): Boolean {
+		if (other == null) return false
+		if (other !is World) return false
+		return mapData.equals(other.mapData) && turnLog.equals(other.turnLog)
+	}
+	
+	override fun hashCode(): Int {
+		return super.hashCode()
+	}
 	
 }

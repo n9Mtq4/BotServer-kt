@@ -1,9 +1,11 @@
 package com.n9mtq4.botserver.bot
 
+import com.n9mtq4.botserver.Team
 import com.n9mtq4.botserver.safeAssert
 import com.n9mtq4.botserver.world.World
 import com.n9mtq4.botserver.world.objects.interfaces.Entity
 import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
+import com.n9mtq4.botserver.world.objects.interfaces.Tickable
 import java.util.ArrayList
 
 /**
@@ -17,13 +19,13 @@ import java.util.ArrayList
  * @param y the y pos of the bot in the world
  * @author Will "n9Mtq4" Bresnahan
  */
-class Bot(override val world: World, val team: Int, override var x: Int, override var y: Int) : Entity {
+class Bot(override val world: World, val team: Team, override var x: Int, override var y: Int) : Entity, Tickable {
 	
-	override var angle: Int = if (team == 1) 90 else 270
+	override var angle: Int = if (team.teamNumber == 1) 90 else 270
 	override var health: Int = BOT_HEALTH
-	override var invinsible: Boolean = true
+	override var invincible: Boolean = false
 	override var isSolid: Boolean = true
-	override val id = team // bot id is the same as the team number
+	override val id = team.teamNumber // bot id is the same as the team number
 	
 	/**
 	 * Number of movements the bot can do in one turn.
@@ -32,16 +34,6 @@ class Bot(override val world: World, val team: Int, override var x: Int, overrid
 	 * @see DEFAULT_ACTION_POINTS
 	 * */
 	var actionPoints = DEFAULT_ACTION_POINTS
-	
-	/**
-	 * Stays the same over multiple turns. (w/ gradual increasing)
-	 * Used for placing blocks and spawning more bots.
-	 * 
-	 * @see DEFAULT_MANA
-	 * @see MAX_MANA
-	 * @see DELTA_MANA
-	 * */
-	var mana = DEFAULT_MANA
 	
 	/**
 	 * Calculates an [ArrayList] of [SeenWorldObject]s that
@@ -72,9 +64,10 @@ class Bot(override val world: World, val team: Int, override var x: Int, overrid
 	/**
 	 * This method is called on all bots every turn.
 	 * Used for healing and regenerating mana.
+	 * 
+	 * @see Tickable.tick
 	 * */
-	internal fun tick() {
-		mana += DELTA_MANA
+	override fun tick() {
 		health += DELTA_BOT_HEALTH
 	}
 	
@@ -210,7 +203,7 @@ class Bot(override val world: World, val team: Int, override var x: Int, overrid
 	
 	/**
 	 * A method that checks to see if you can perform an action.
-	 * If you can, it deducts them from your total.
+	 * If you can, it deducts action points from your total.
 	 * 
 	 * @param need How many action points needed
 	 * @return true if there aren't enough action points, false otherwise
@@ -221,9 +214,16 @@ class Bot(override val world: World, val team: Int, override var x: Int, overrid
 		return false // say it was successful
 	}
 	
+	/**
+	 * A method that checks to see if you can perform an action.
+	 * If you can, it deducts mana from your total.
+	 *
+	 * @param need How much mana is needed
+	 * @return true if there aren't enough mana, false otherwise
+	 * */
 	private fun assertPerformMana(need: Int): Boolean {
-		if (mana - need < 0) return true
-		mana -= need
+		if (team.mana - need < 0) return true
+		team.mana -= need
 		return false
 	}
 	
