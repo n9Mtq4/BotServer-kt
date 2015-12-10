@@ -27,8 +27,8 @@ import java.net.ServerSocket
 class Game : Runnable {
 	
 	val serverSocket: ServerSocket
-	val world: World
-	val gameWriter: GameWriter
+	var world: World? = null // TODO: bad find a way to make it a val
+	var gameWriter: GameWriter? = null // TODO: bad find a way to make it a val
 	var turnNumber: Int
 	
 	var team1: Team? = null
@@ -40,10 +40,16 @@ class Game : Runnable {
 	init {
 		
 		this.serverSocket = ServerSocket(SOCKET_PORT)
-		this.world = World(WORLD_WIDTH, WORLD_HEIGHT, WorldGenerators.Random)
-		this.gameWriter = GameWriter(world, File("game.txt")) // TODO: get the file from cla
 		this.turnNumber = 0
 		
+	}
+	
+	fun getTeamByNumber(teamNumber: Int): Team {
+		return when (teamNumber) {
+			1 -> team1!!
+			2 -> team2!!
+			else -> throw IllegalArgumentException("No team with number: $teamNumber")
+		}
 	}
 	
 	/**
@@ -69,26 +75,31 @@ class Game : Runnable {
 	override fun run() {
 		
 		initConnections()
+		
+//		generate world
+		this.world = World(this, WORLD_WIDTH, WORLD_HEIGHT, WorldGenerators.StratigicRandom)
+		this.gameWriter = GameWriter(world!!, File("game.txt")) // TODO: get the file from cla
+		
 		while (turnNumber < MAX_TURNS) {
 			
 //			TODO: ruby server does each teams bot back and forth
 //			process the teams turn, if initConnections didn't work, we want the NPE
-			team1!!.processTurn(world)
-			team2!!.processTurn(world)
+			team1!!.processTurn(world!!)
+			team2!!.processTurn(world!!)
 			
-			gameWriter.tick() // write this turn's data
-			world.tick() // tick the world
+			gameWriter!!.tick() // write this turn's data
+			world!!.tick() // tick the world
 //			check if a team has won
-			if (world.win > 0) {
+			if (world!!.win > 0) {
 //				a team has!
-				gameWriter.printWriter.println("WIN ${world.win}") // record their winning
+				gameWriter!!.printWriter.println("WIN ${world!!.win}") // record their winning
 				break; // end the game
 			}
 			turnNumber++ // next turn
 			
 		}
 		
-		gameWriter.printWriter.println("DRAW") // no one wins :(
+		gameWriter!!.printWriter.println("DRAW") // no one wins :(
 		
 	}
 	

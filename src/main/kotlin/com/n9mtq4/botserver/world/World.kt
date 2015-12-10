@@ -1,5 +1,6 @@
 package com.n9mtq4.botserver.world
 
+import com.n9mtq4.botserver.Game
 import com.n9mtq4.botserver.bot.Bot
 import com.n9mtq4.botserver.bot.SeenWorldObject
 import com.n9mtq4.botserver.toRadians
@@ -24,7 +25,7 @@ import kotlin.test.assertTrue
  * @see com.n9mtq4.botserver.world.generation.WorldGenerators
  * @author Will "n9Mtq4" Bresnahan
  */
-public class World(val width: Int, val height: Int, generator: WorldGeneratorBehavior) {
+public class World(val game: Game, val width: Int, val height: Int, generator: WorldGeneratorBehavior) {
 	
 	internal val mapData: Array<WorldObject>
 	internal val turnLog: ArrayList<String>
@@ -49,6 +50,18 @@ public class World(val width: Int, val height: Int, generator: WorldGeneratorBeh
 	fun tick() {
 		mapData.filter 	{ it is Tickable }.
 				forEach { (it as Tickable).tick() }
+	}
+	
+	/**
+	 * Spawns a bot at pos ([x], [y]) for team
+	 * [teamNumber].
+	 * 
+	 * @param x the x pos
+	 * @param y the y pos
+	 * @param teamNumber the team number of the bot
+	 * */
+	fun spawnBotAt(x: Int, y: Int, teamNumber: Int) {
+		set(x, y, Bot(this, game.getTeamByNumber(teamNumber), x, y))
 	}
 	
 	/**

@@ -1,14 +1,23 @@
 package com.n9mtq4.botserver
 
+import java.util.Random
+
 /**
  * Created by will on 12/8/15 at 4:42 PM.
  * 
- * Contains basic utils. eg:
+ * Contains basic / misc utils. eg:
  * radian and degree conversions
  * and an assert that wont crash anything
  * 
  * @author Will "n9Mtq4" Bresnahan
  */
+
+/**
+ * A global random variable.
+ * Generated numbers are more random
+ * if you use the same java.util.Random instance.
+ * */
+val RANDOM = Random()
 
 /**
  * Converts degrees into radians.

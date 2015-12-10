@@ -14,6 +14,6 @@ package com.n9mtq4.botserver.world.objects
  */
 //remember: 1 and 2 are reserved for the bots
 val ID_NOTHING = 0
-val ID_WALL = 7
-val ID_FLAG = 5
 val ID_BLOCK = 3
+val ID_WALL = 4
+val ID_FLAG = 5
