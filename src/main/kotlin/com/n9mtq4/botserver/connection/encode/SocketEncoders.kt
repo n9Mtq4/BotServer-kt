@@ -4,6 +4,9 @@ import com.n9mtq4.botserver.API_LEVEL
 import com.n9mtq4.botserver.Team
 import com.n9mtq4.botserver.bot.Bot
 import com.n9mtq4.botserver.world.World
+import com.n9mtq4.botserver.world.objects.interfaces.Entity
+import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
+import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 
 /**
@@ -46,10 +49,40 @@ sealed class SocketEncoders {
 		 * */
 		override fun encodeBotData(bot: Bot, world: World, team: Team): String {
 			
-//			TODO: encode into JSON
-			val json = JSONObject()
+			val json = JSONObject() // the json text
 			
-			throw UnsupportedOperationException("NYI")
+//			data for the bot
+			json.put("x", bot.x)
+			json.put("y", bot.y)
+			json.put("angle", bot.angle)
+			json.put("ap", bot.actionPoints)
+			json.put("mana", team.mana)
+			
+			val vision = JSONArray() // array of things we can see
+			
+//			go through every thing we can see
+			bot.generateVision().forEach { 
+				
+//				make an object for it
+				val visionObj = JSONObject()
+				
+//				SeenWorldObject data
+				visionObj.put("type", it.javaClass.simpleName.toUpperCase()) // type
+				if (it.obj is Bot) visionObj.put("team", it.obj.id) // team
+				visionObj.put("x", it.x) // x
+				visionObj.put("y", it.y) // y
+				if (it.obj is Entity) visionObj.put("angle", it.obj.angle) // angle
+				if (it.obj is HealthWorldObject) visionObj.put("health", it.obj.health) // health
+				
+				vision.add(visionObj) // add it to the things we can see
+				
+			}
+			
+//			add the vision
+			json.put("vision", vision)
+			
+//			turn it into a string
+			return json.toJSONString()
 			
 		}
 		
