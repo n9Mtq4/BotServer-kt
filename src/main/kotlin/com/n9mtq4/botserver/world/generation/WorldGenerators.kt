@@ -47,7 +47,9 @@ sealed class WorldGenerators {
 	object UniformRandom : WorldGeneratorBehavior {
 		val BLOCK_PERCENTAGE = 0.005F // percentage of blocks - 0.5%
 		override fun getObjectAt(x: Int, y: Int, world: World): WorldObject {
-			if (Empty.getObjectAt(x, y, world) is Wall) return Wall // use the empty generator as a template
+//			use the empty world as a template
+			val emptysValue = Empty.getObjectAt(x, y, world)
+			if (emptysValue !is WorldNothing) return emptysValue
 			if (RANDOM.nextFloat() <= BLOCK_PERCENTAGE) return Block(world, x, y) // random chance of a block
 			return WorldNothing // nothing else to do, so an empty space
 		}
@@ -59,7 +61,9 @@ sealed class WorldGenerators {
 	object StratigicRandom : WorldGeneratorBehavior {
 		val BLOCK_PERCENTAGE = 0.10F // percentage of blocks - 10%
 		override fun getObjectAt(x: Int, y: Int, world: World): WorldObject {
-			if (Empty.getObjectAt(x, y, world) is Wall) return Wall // use the empty generator as a template
+//			use the empty world as a template
+			val emptysValue = Empty.getObjectAt(x, y, world)
+			if (emptysValue !is WorldNothing) return emptysValue
 //			only generate random blocks in the middle 1/3rd of the map
 			if (y > (world.height / 3) * 1 && y < (world.height / 3) * 2) {
 				if (RANDOM.nextFloat() <= BLOCK_PERCENTAGE) return Block(world, x, y) // random chance of a block

@@ -67,7 +67,7 @@ sealed class SocketEncoders {
 				val visionObj = JSONObject()
 				
 //				SeenWorldObject data
-				visionObj.put("type", it.javaClass.simpleName.toUpperCase()) // type
+				visionObj.put("type", it.obj.javaClass.simpleName.toUpperCase()) // type
 				if (it.obj is Bot) visionObj.put("team", it.obj.id) // team
 				visionObj.put("x", it.x) // x
 				visionObj.put("y", it.y) // y

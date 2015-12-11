@@ -58,8 +58,8 @@ class Game : Runnable {
 	fun initConnections() {
 		
 //		TODO: change to KotlinClient when there are unique features
-		val team1Connection = ClientConnection(serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
-		val team2Connection = ClientConnection(serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
+		val team1Connection = ClientConnection(1, serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
+		val team2Connection = ClientConnection(2, serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
 		
 		team1 = Team(1, team1Connection)
 		team2 = Team(2, team2Connection)
@@ -81,6 +81,8 @@ class Game : Runnable {
 		this.gameWriter = GameWriter(world!!, File("game.txt")) // TODO: get the file from cla
 		
 		while (turnNumber < MAX_TURNS) {
+			
+			println("Processing turn: $turnNumber")
 			
 //			TODO: ruby server does each teams bot back and forth
 //			process the teams turn, if initConnections didn't work, we want the NPE

@@ -25,7 +25,7 @@ import java.net.Socket
  * @see SocketDecoder
  * @author Will "n9Mtq4" Bresnahan
  */
-class ClientConnection(val serverSocket: ServerSocket, val encoder: SocketEncoder, val decoder: SocketDecoder) {
+class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val encoder: SocketEncoder, val decoder: SocketDecoder) {
 	
 	internal val client: Socket
 	internal val input: BufferedReader
@@ -45,6 +45,7 @@ class ClientConnection(val serverSocket: ServerSocket, val encoder: SocketEncode
 		this.output = PrintWriter(client.outputStream, true)
 		
 		write(encoder.encodeStartGame())
+		write(teamNumber.toString())
 		
 	}
 	
