@@ -2,6 +2,7 @@ package com.n9mtq4.botserver
 
 import com.n9mtq4.botserver.bot.DEFAULT_MANA
 import com.n9mtq4.botserver.bot.DELTA_MANA
+import com.n9mtq4.botserver.bot.MAX_MANA
 import com.n9mtq4.botserver.connection.ClientConnection
 import com.n9mtq4.botserver.world.World
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
@@ -37,6 +38,7 @@ data class Team(val teamNumber: Int, val clientConnection: ClientConnection) : T
 	 * */
 	override fun tick() {
 		mana += DELTA_MANA
+		if (mana > MAX_MANA) mana = MAX_MANA // mana cap
 	}
 	
 	/**

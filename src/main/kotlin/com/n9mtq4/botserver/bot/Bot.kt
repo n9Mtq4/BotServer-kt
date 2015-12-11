@@ -69,6 +69,8 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * */
 	override fun tick() {
 		health += DELTA_BOT_HEALTH
+		if (health > MAX_BOT_HEALTH) health = MAX_BOT_HEALTH // cap the health
+		actionPoints = DEFAULT_ACTION_POINTS // reset the action points
 	}
 	
 	/**

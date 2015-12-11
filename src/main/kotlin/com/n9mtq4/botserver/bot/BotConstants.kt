@@ -22,11 +22,13 @@ package com.n9mtq4.botserver.bot
  * 
  * @author Will "n9Mtq4" Bresnahan
  */
-val BOT_HEALTH = 100
-val DELTA_BOT_HEALTH = 1
 val FOV = 90
 
 val SHOOT_DAMAGE = 50
+
+val BOT_HEALTH = 100
+val DELTA_BOT_HEALTH = 1
+val MAX_BOT_HEALTH = 150
 
 val DEFAULT_ACTION_POINTS = 10
 val DEFAULT_MANA = 10
