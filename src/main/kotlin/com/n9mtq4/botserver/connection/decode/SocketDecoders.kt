@@ -62,7 +62,7 @@ sealed class SocketDecoders {
 		}
 		
 		/**@see [SocketDecoder.shouldContinue]*/
-		override fun shouldContinue(line: String, bot: Bot, world: World): Boolean {
+		override fun shouldContinue(line: String): Boolean {
 			return !line.contains("END")
 		}
 	}

@@ -55,6 +55,7 @@ sealed class SocketEncoders {
 			json.put("x", bot.x)
 			json.put("y", bot.y)
 			json.put("angle", bot.angle)
+			json.put("health", bot.health)
 			json.put("ap", bot.actionPoints)
 			json.put("mana", team.mana)
 			

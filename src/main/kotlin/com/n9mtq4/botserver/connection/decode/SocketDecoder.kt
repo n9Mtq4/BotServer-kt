@@ -32,6 +32,6 @@ interface SocketDecoder {
 	 * @param world the [World]
 	 * @return if the parsing of the client should continue
 	 * */
-	fun shouldContinue(line: String, bot: Bot, world: World): Boolean
+	fun shouldContinue(line: String): Boolean
 	
 }

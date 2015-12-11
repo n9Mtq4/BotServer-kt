@@ -110,7 +110,9 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 		
 		while (isInBounds(cx, cy)) {
 //			if the WorldObject at (cx, cy) isn't nothing, return it with the pos
-			if (get(cx, cy) !is WorldNothing) return SeenWorldObject(get(cx, cy), cx.toInt(), cy.toInt())
+			if (cx.toInt() != x || cy.toInt() != y) { // don't include this block
+				if (get(cx, cy) !is WorldNothing) return SeenWorldObject(get(cx, cy), cx.toInt(), cy.toInt())
+			}
 //			update the ray casting location
 			cx += dx
 			cy += dy

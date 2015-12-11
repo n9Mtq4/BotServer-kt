@@ -51,10 +51,21 @@ data class Team(val teamNumber: Int, val clientConnection: ClientConnection) : T
 		
 //		TODO: the start and end are inside the forEach for jake's ruby api support.
 //		go through all bots
-		world.getAllBotsByTeam(teamNumber).forEach {
+		world.getAllBotsByTeam(teamNumber).forEach { bot ->
+			
+//			write to the client
 			clientConnection.startTurnSend() // START_TURN
-			clientConnection.writeBot(it, world, this) // sends the json bot w/ vision
-			clientConnection.endTurnSend() // nothing for now, again jake's crappy ruby api support
+			clientConnection.writeBot(bot, world, this) // sends the json bot w/ vision
+			clientConnection.endTurnSend() // nothing for now, again jake's crappy ruby api support holding us back
+			
+//			give the client half a second
+			Thread.sleep(CLIENT_TURN_TIMER)
+			
+//			read from the client
+			val data = clientConnection.readInputTurnData() // read
+//			process
+			data.split("\n").forEach { line -> clientConnection.decoder.decodeTurnLine(line, bot, world) }
+			
 		}
 		tick() // team tick
 		

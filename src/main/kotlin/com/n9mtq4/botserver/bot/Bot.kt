@@ -21,7 +21,7 @@ import java.util.ArrayList
  */
 class Bot(override val world: World, val team: Team, override var x: Int, override var y: Int) : Entity, Tickable {
 	
-	override var angle: Int = if (team.teamNumber == 1) 90 else 270
+	override var angle: Int = if (team.teamNumber == 1) 270 else 90
 	override var health: Int = BOT_HEALTH
 	override var invincible: Boolean = false
 	override var isSolid: Boolean = true

@@ -6,8 +6,9 @@ import com.n9mtq4.botserver.connection.decode.SocketDecoder
 import com.n9mtq4.botserver.connection.encode.SocketEncoder
 import com.n9mtq4.botserver.world.World
 import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.InputStreamReader
-import java.io.PrintWriter
+import java.io.OutputStreamWriter
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -29,7 +30,7 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val 
 	
 	internal val client: Socket
 	internal val input: BufferedReader
-	internal val output: PrintWriter
+	internal val output: BufferedWriter
 	
 	/**
 	 * Waits for a client to connect
@@ -40,12 +41,15 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val 
 		
 		print("Waiting for team to connect...")
 		this.client = serverSocket.accept()
-		println("connection established")
+		
 		this.input = BufferedReader(InputStreamReader(client.inputStream))
-		this.output = PrintWriter(client.outputStream, true)
+//		this.output = PrintWriter(client.outputStream, true)
+		this.output = BufferedWriter(OutputStreamWriter(client.outputStream))
 		
 		write(encoder.encodeStartGame())
 		write(teamNumber.toString())
+		
+		println("connection established")
 		
 	}
 	
@@ -62,7 +66,7 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val 
 	 * 
 	 * @see SocketEncoder.encodeEndTurn
 	 * */
-	internal fun endTurnSend() {/*write(encoder.encodeEndTurn())*/}
+	internal fun endTurnSend() {/* = write(encoder.encodeEndTurn())*/}
 	
 	/**
 	 * Writes the [bot] to the client.
@@ -82,12 +86,27 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val 
 	internal fun read() = input.readLine()
 	
 	/**
+	 * Reads all the clients actions for this turn.
+	 * */
+	internal fun readInputTurnData(): String {
+		var text = ""
+		var line: String
+		do {
+			line = input.readLine()
+			text += line + "\n"
+		}while (decoder.shouldContinue(line))
+		return text
+	}
+	
+	/**
 	 * Writes data to the socket.
 	 * 
 	 * @param msg the string to write
 	 * */
+	@JvmName("write")
 	internal fun write(msg: String) {
-		output.print(msg)
+//		output.print(msg)
+		output.write(msg + "\n")
 		output.flush() // make sure to flush!
 	}
 	

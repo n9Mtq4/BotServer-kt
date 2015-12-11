@@ -49,6 +49,6 @@ fun Double.toDegrees() = Math.toDegrees(this)
  * @return if the calling method should stop
  * */
 fun safeAssert(bool: Boolean, msg: String): Boolean {
-	println(msg)
-	return bool
+	if (!bool) println(msg)
+	return !bool
 }

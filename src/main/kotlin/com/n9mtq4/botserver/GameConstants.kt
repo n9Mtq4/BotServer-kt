@@ -12,3 +12,4 @@ package com.n9mtq4.botserver
 val SOCKET_PORT = 2000
 val API_LEVEL = 1
 val MAX_TURNS = 1000
+val CLIENT_TURN_TIMER = 500L
