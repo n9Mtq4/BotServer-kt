@@ -52,3 +52,17 @@ fun safeAssert(bool: Boolean, msg: String): Boolean {
 	if (!bool) println(msg)
 	return !bool
 }
+
+/**
+ * Puts the angle to a -179 to 180 range.
+ * http://stackoverflow.com/a/2321136/5196460
+ * 
+ * @param angle any angle in degrees
+ * @return the angle in -179 to 180 range
+ * */
+fun normalizeAngle(angle: Double): Double {
+	var newAngle = angle
+	while (newAngle <= -180) newAngle += 360
+	while (newAngle > 180) newAngle -= 360
+	return newAngle
+}

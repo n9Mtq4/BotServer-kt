@@ -1,8 +1,11 @@
 package com.n9mtq4.botserver.bot
 
 import com.n9mtq4.botserver.Team
+import com.n9mtq4.botserver.normalizeAngle
 import com.n9mtq4.botserver.safeAssert
+import com.n9mtq4.botserver.toDegrees
 import com.n9mtq4.botserver.world.World
+import com.n9mtq4.botserver.world.objects.Wall
 import com.n9mtq4.botserver.world.objects.interfaces.Entity
 import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
@@ -56,6 +59,40 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 			castingAngle++ // next angle
 			
 		}
+		
+		return vision
+		
+	}
+	
+	/**
+	 * Calculates an [ArrayList] of [SeenWorldObject]s that
+	 * are in the bot's field of view.
+	 * This is a more advanced version that is guarantied to
+	 * see everything possible. The [generateVision] is good,
+	 * but things can hide in between the lines, because they
+	 * are not very accurate. This attempts to fix that, by
+	 * varying the delta of the ray casting angle based on what
+	 * we are trying to see.
+	 *
+	 * @return an [ArrayList] of [SeenWorldObject]s in the bot's fov
+	 * @see FOV
+	 * */
+	internal fun advancedVisionGeneration(): ArrayList<SeenWorldObject> {
+		
+		val vision = ArrayList<SeenWorldObject>()
+//		get the range of the FOV in degrees
+		val minAngle = normalizeAngle((angle - FOV / 2).toDouble())
+		val maxAngle = normalizeAngle((angle + FOV / 2).toDouble())
+//		i know github handles tabs differently and this looks like a big mess.
+//		just download the file and view it in intellij
+		world.mapData.	filter 	{ it is Wall }. // get the borders of the map. // TODO: change this to x y borders rather than Walls
+						map 	{ Math.atan2((it.y - y).toDouble(), (it.x - x).toDouble()) }. // get the angle to it in radians
+						map 	{ it.toDegrees() }. // we like degrees here
+						map 	{ normalizeAngle(it) }. // make sure we can work with it
+						filter 	{ minAngle >= it && it <= maxAngle }. // filter the angles if they are in my FOV
+						map 	{ world.findObjectUsingRayCasting(x, y, it) }. // ray cast to them
+						filter 	{ !vision.contains(it) }. // don't add the object multiple times
+						forEach { vision.add(it) } // add it
 		
 		return vision
 		

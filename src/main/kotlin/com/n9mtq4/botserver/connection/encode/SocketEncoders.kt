@@ -62,7 +62,7 @@ sealed class SocketEncoders {
 			val vision = JSONArray() // array of things we can see
 			
 //			go through every thing we can see
-			bot.generateVision().forEach { 
+			bot.advancedVisionGeneration().forEach { 
 				
 //				make an object for it
 				val visionObj = JSONObject()
