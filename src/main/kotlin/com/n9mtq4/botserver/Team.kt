@@ -61,7 +61,7 @@ data class Team(val teamNumber: Int, val clientConnection: ClientConnection) : T
 			clientConnection.endTurnSend() // nothing for now, again jake's crappy ruby api support holding us back
 			
 //			give the client half a second
-			Thread.sleep(CLIENT_TURN_TIMER)
+//			Thread.sleep(CLIENT_TURN_TIMER)
 			
 //			read from the client
 			val data = clientConnection.readInputTurnData() // read

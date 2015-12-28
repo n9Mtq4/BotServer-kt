@@ -58,6 +58,7 @@ sealed class SocketEncoders {
 			json.put("health", bot.health)
 			json.put("ap", bot.actionPoints)
 			json.put("mana", team.mana)
+			json.put("uuid", bot.uuid) // TODO: BotServer-kt only, but should be compatable w/ ruby client
 			
 			val vision = JSONArray() // array of things we can see
 			

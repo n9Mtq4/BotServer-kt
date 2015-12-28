@@ -1,7 +1,6 @@
 package com.n9mtq4.botserver.bot
 
 import com.n9mtq4.botserver.Team
-import com.n9mtq4.botserver.normalizeAngle
 import com.n9mtq4.botserver.safeAssert
 import com.n9mtq4.botserver.toDegrees
 import com.n9mtq4.botserver.world.World
@@ -29,6 +28,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	override var invincible: Boolean = false
 	override var isSolid: Boolean = true
 	override val id = team.teamNumber // bot id is the same as the team number
+	override val uuid = world.getNextUUID()
 	
 	/**
 	 * Number of movements the bot can do in one turn.
@@ -81,18 +81,21 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		
 		val vision = ArrayList<SeenWorldObject>()
 //		get the range of the FOV in degrees
-		val minAngle = normalizeAngle((angle - FOV / 2).toDouble())
-		val maxAngle = normalizeAngle((angle + FOV / 2).toDouble())
+//		val minAngle = normalizeAngle((angle - FOV / 2).toDouble())
+//		val maxAngle = normalizeAngle((angle + FOV / 2).toDouble())
+//		println("min: $minAngle, max: $maxAngle")
 //		i know github handles tabs differently and this looks like a big mess.
 //		just download the file and view it in intellij
 		world.mapData.	filter 	{ it is Wall }. // get the borders of the map. // TODO: change this to x y borders rather than Walls
 						map 	{ Math.atan2((it.y - y).toDouble(), (it.x - x).toDouble()) }. // get the angle to it in radians
 						map 	{ it.toDegrees() }. // we like degrees here
-						map 	{ normalizeAngle(it) }. // make sure we can work with it
-						filter 	{ minAngle >= it && it <= maxAngle }. // filter the angles if they are in my FOV
+//						map 	{ normalizeAngle(it) }. // make sure we can work with it
+						filter 	{ Math.abs(it - angle) <= FOV / 2 }. // filter the angles if they are in my FOV
 						map 	{ world.findObjectUsingRayCasting(x, y, it) }. // ray cast to them
 						filter 	{ !vision.contains(it) }. // don't add the object multiple times
 						forEach { vision.add(it) } // add it
+		vision.filter { vision.indexOf(it) != vision.lastIndexOf(it) }.
+				forEach { println("duplicate!: $it") }
 		
 		return vision
 		
@@ -155,7 +158,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @see turn
 	 * @see TURN_COST
 	 * */
-	internal fun calcTurn(angle: Int) = angle / TURN_COST
+	internal fun calcTurn(angle: Int) = Math.ceil(Math.abs(angle / TURN_COST).toDouble()).toInt() // fuck kotlin's number casting
 	
 	/**
 	 * Turns the [Bot] by [angle] degrees.
@@ -207,7 +210,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		val target = world.findObjectUsingRayCasting(x, y, angle) // find the first target
 		if (target.obj is HealthWorldObject) target.obj.dealDamage(SHOOT_DAMAGE) // if we can shoot it, then shoot it
 //		TODO: add this to the turn file, so we can see the shot
-		world.turnLog.add("$x, $y, $angle")
+		world.turnLog.add("$x,$y,$angle")
 		
 	}
 	
@@ -222,6 +225,8 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @see PLACE_COST
 	 * */
 	internal fun calcPlace(dx: Int, dy: Int) = PLACE_COST
+	
+//	TODO: apparently placing and spawning costs mana and action points!
 	
 	/**
 	 * Places a block at ([x] + [dx], [y] + [dy]), if
@@ -238,6 +243,26 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		
 //		place a block - world.placeBlock does checking for a clear space
 		world.placeBlock(x + dx, y + dy)
+		
+	}
+	
+	internal fun calcSpawnBot(dx: Int, dy: Int) = SPAWN_COST
+	
+	@Deprecated("Not yet tested")
+	fun spawnBot(dx: Int, dy: Int) {
+		
+//		mana handling
+		if (assertPerformMana(calcSpawnBot(dx, dy))) return
+		
+//		convert to abs coords
+		val x = x + dx
+		val y = y + dy
+		
+//		spawn a new bot
+//		world.spawnBotAt does not check for a clear space, so we have to do that
+		val objectAtPos = world.get(x, y)
+		if (objectAtPos.isSolid) return // we can't place it!
+		world.spawnBotAt(x, y, id)
 		
 	}
 	

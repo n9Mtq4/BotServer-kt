@@ -22,6 +22,7 @@ class Flag(override val world: World, override var x: Int, override var y: Int, 
 	
 	override var isSolid = true
 	override val id = ID_FLAG
+	override val uuid = world.getNextUUID()
 	
 	/**
 	 * The flag's tick method.
@@ -35,8 +36,32 @@ class Flag(override val world: World, override var x: Int, override var y: Int, 
 	 * */
 	override fun tick() {
 		
-		val surrounding = arrayOf(	world.get(-1 + x, -1 + y), 	world.get(x + 0, -1 + y), 	world.get(1 + x, -1 + y), 
-									world.get(-1 + x, 0 + y), 	/*u r here*/				world.get(1 + x, 0 + y), 
+		checkForWinCondition()
+		checkForTeamRevival()
+		
+	}
+	
+	/**
+	 * If the team has no bots that can cause problems.
+	 * Also there is no way for them to get back in the game.
+	 * This will give them a new bot if they all die.
+	 * TODO: give them a score penalty or something
+	 * */
+	private fun checkForTeamRevival() {
+//		count how many bots we currently have
+		val teamBots = 	world.mapData.filter 	{ it is Bot }. // filter by bots
+						map 					{ it.id }. // get the team numbers
+						filter 					{ it == loyalty }. // filter by our team
+						size // count them
+		if (teamBots == 0) world.spawnBotAt(x, y + if (loyalty == 1) 1 else -1, loyalty) // spawn a bot in front of the flag, if we have 0
+	}
+	
+	/**
+	 * This function checks if the other team has won.
+	 * */
+	private fun checkForWinCondition() {
+		val surrounding = arrayOf(	world.get(-1 + x, -1 + y), 	world.get(x + 0, -1 + y), 	world.get(1 + x, -1 + y),
+									world.get(-1 + x, 0 + y), 	/*u r here*/				world.get(1 + x, 0 + y),
 									world.get(-1 + x, 1 + y), 	world.get(0 + x, 1 + y), 	world.get(1 + x, 1 + y))
 		
 		val surroundingEnemyBots = surrounding.	filter 	{ it is Bot }. // filter by bot

@@ -39,5 +39,11 @@ interface WorldObject {
 	 * The is no support for 2 digit numbers yet
 	 * */
 	val id: Int
+	/**
+	 * The Unique id of the entity in the world.
+	 * Initialize with ```override val uuid = world.getNextUUID()```
+	 * This should be -1 for singletons
+	 * */
+	val uuid: Int
 	
 }

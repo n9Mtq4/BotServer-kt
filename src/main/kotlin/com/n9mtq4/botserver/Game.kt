@@ -77,8 +77,8 @@ class Game : Runnable {
 		initConnections()
 		
 //		generate world
-		this.world = World(this, WORLD_WIDTH, WORLD_HEIGHT, WorldGenerators.StratigicRandom)
-		this.gameWriter = GameWriter(world!!, File("game.txt")) // TODO: get the file from cla
+		this.world = World(this, WORLD_WIDTH, WORLD_HEIGHT, WorldGenerators.StrategicRandom)
+		this.gameWriter = GameWriter(world!!, File("game.txt")) // TODO: get the file from cla?
 		
 		while (turnNumber < MAX_TURNS) {
 			

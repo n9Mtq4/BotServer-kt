@@ -30,6 +30,7 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 	internal val mapData: Array<WorldObject>
 	internal val turnLog: ArrayList<String>
 	internal var win: Int
+	private var uuidManager: Int = 0
 	
 	init {
 //		TODO: isSolid = false wont work properly with the movement system
@@ -110,9 +111,8 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 		
 		while (isInBounds(cx, cy)) {
 //			if the WorldObject at (cx, cy) isn't nothing, return it with the pos
-			if (cx.toInt() != x || cy.toInt() != y) { // don't include this block
-				if (get(cx, cy) !is WorldNothing) return SeenWorldObject(get(cx, cy), cx.toInt(), cy.toInt())
-			}
+			if (cx.toInt() == x && cy.toInt() == y) continue // don't include this block
+			if (get(cx, cy) !is WorldNothing) return SeenWorldObject(get(cx, cy), cx.toInt(), cy.toInt())
 //			update the ray casting location
 			cx += dx
 			cy += dy
@@ -290,6 +290,15 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 	fun set(x: Int, y: Int, obj: WorldObject) {
 		assertWorldBounds(x, y)
 		mapData[x + y * width] = obj // convert (x, y) to index
+	}
+	
+	/**
+	 * Gets the next UUID for a [WorldObject].
+	 * 
+	 * @return the next available UUID
+	 * */
+	internal fun getNextUUID(): Int {
+		return uuidManager++
 	}
 	
 //	TODO: add documentation

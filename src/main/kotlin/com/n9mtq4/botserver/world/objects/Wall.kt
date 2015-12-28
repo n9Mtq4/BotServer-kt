@@ -26,5 +26,6 @@ object Wall : WorldObject {
 	override var y = -1
 	override var isSolid = true
 	override val id = ID_WALL
+	override val uuid = -1
 	
 }

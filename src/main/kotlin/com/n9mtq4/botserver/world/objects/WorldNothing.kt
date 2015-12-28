@@ -26,5 +26,6 @@ object WorldNothing : WorldObject {
 	override var y = -1
 	override var isSolid = false
 	override val id = ID_NOTHING
+	override val uuid = -1
 	
 }

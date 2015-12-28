@@ -24,7 +24,7 @@ sealed class SocketDecoders {
 			
 			try {
 				
-				if (line.toLowerCase().contains("move")) {
+				if (line.contains("move", true)) {
 //					moving
 //					parse
 					val tokens = line.split(" ")
@@ -32,7 +32,7 @@ sealed class SocketDecoders {
 					val dy = tokens[2].toInt()
 //					move
 					bot.move(dx, dy)
-				}else if (line.toLowerCase().contains("turn")) {
+				}else if (line.contains("turn", true)) {
 //					turning
 //					parse
 					val tokens = line.split(" ")
@@ -42,7 +42,7 @@ sealed class SocketDecoders {
 				}else if (line.equals("shoot", true)) {
 //					shooting
 					bot.shoot()
-				}else if (line.toLowerCase().contains("place")) {
+				}else if (line.contains("place", true)) {
 //					placing a block
 //					parse
 					val tokens = line.split(" ")
@@ -50,8 +50,14 @@ sealed class SocketDecoders {
 					val dy = tokens[2].toInt()
 //					place
 					bot.place(dx, dy)
-				}else if (line.equals("spawn", true)) {
-//					TODO: spawn a new bot
+				}else if (line.contains("spawn", true)) {
+//					spawning a new bot
+//					parse
+					val tokens = line.split(" ")
+					val dx = tokens[1].toInt()
+					val dy = tokens[2].toInt()
+//					spawn
+					bot.spawnBot(dx, dy)
 				}
 				
 			}catch (e: Exception) {

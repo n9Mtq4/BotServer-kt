@@ -58,7 +58,7 @@ sealed class WorldGenerators {
 	/**
 	 * Generates a map with randomly placed blocks in the middle 1/3rd of the map.
 	 * */
-	object StratigicRandom : WorldGeneratorBehavior {
+	object StrategicRandom : WorldGeneratorBehavior {
 		val BLOCK_PERCENTAGE = 0.10F // percentage of blocks - 10%
 		override fun getObjectAt(x: Int, y: Int, world: World): WorldObject {
 //			use the empty world as a template
