@@ -1,6 +1,8 @@
 package com.n9mtq4.botserver.bot
 
 import com.n9mtq4.botserver.Team
+import com.n9mtq4.botserver.calculateAnge
+import com.n9mtq4.botserver.normalizeAngle
 import com.n9mtq4.botserver.safeAssert
 import com.n9mtq4.botserver.toDegrees
 import com.n9mtq4.botserver.world.World
@@ -8,6 +10,7 @@ import com.n9mtq4.botserver.world.objects.Wall
 import com.n9mtq4.botserver.world.objects.interfaces.Entity
 import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
+import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
 import java.util.ArrayList
 
 /**
@@ -45,6 +48,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @return an [ArrayList] of [SeenWorldObject]s in the bot's fov
 	 * @see FOV
 	 * */
+	@Deprecated("Doesn't work")
 	internal fun generateVision(): ArrayList<SeenWorldObject> {
 		
 		val vision = ArrayList<SeenWorldObject>() // store vision things here
@@ -77,6 +81,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @return an [ArrayList] of [SeenWorldObject]s in the bot's fov
 	 * @see FOV
 	 * */
+	@Deprecated("Doesn't work")
 	internal fun advancedVisionGeneration(): ArrayList<SeenWorldObject> {
 		
 		val vision = ArrayList<SeenWorldObject>()
@@ -86,10 +91,10 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 //		println("min: $minAngle, max: $maxAngle")
 //		i know github handles tabs differently and this looks like a big mess.
 //		just download the file and view it in intellij
-		world.mapData.	filter 	{ it is Wall }. // get the borders of the map. // TODO: change this to x y borders rather than Walls
-						map 	{ Math.atan2((it.y - y).toDouble(), (it.x - x).toDouble()) }. // get the angle to it in radians
+		world.mapData.	filter 	{ it is Wall }. // get the borders of the map. // TODO: is borders
+						map 	{ Math.atan2((it.y - y).toDouble(), (it.x - x).toDouble()) }. // get the angle to it in radians //TODO: atan2 is expensive
 						map 	{ it.toDegrees() }. // we like degrees here
-//						map 	{ normalizeAngle(it) }. // make sure we can work with it
+						map 	{ normalizeAngle(it) }. // make sure we can work with it
 						filter 	{ Math.abs(it - angle) <= FOV / 2 }. // filter the angles if they are in my FOV
 						map 	{ world.findObjectUsingRayCasting(x, y, it) }. // ray cast to them
 						filter 	{ !vision.contains(it) }. // don't add the object multiple times
@@ -97,8 +102,42 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		vision.filter { vision.indexOf(it) != vision.lastIndexOf(it) }.
 				forEach { println("duplicate!: $it") }
 		
+//		println(vision.size)
 		return vision
 		
+	}
+	
+	@Deprecated("Doesn't work")
+	internal fun advancedVisionGeneration2(): ArrayList<SeenWorldObject> {
+		val vision = ArrayList<SeenWorldObject>()
+		world.mapData.map { Math.atan2((it.y - y).toDouble(), (it.x - x).toDouble()) }.
+				map { it.toDegrees() }.
+				filter { Math.abs(it - angle) <= FOV / 2 }.
+				map { world.findObjectUsingRayCasting(x, y, it) }.
+				filter { !vision.contains(it) }.
+				forEach { vision.add(it) }
+		vision.filter { vision.indexOf(it) != vision.lastIndexOf(it) }.
+				forEach { println("duplicate!: $it") }
+		return vision
+	}
+	
+	internal fun jakesVisionGeneration(): ArrayList<SeenWorldObject> {
+		val vision = ArrayList<WorldObject>()
+		val leftMostAngle = angle - (FOV / 2)
+		val rightMostAngle = angle + (FOV / 2)
+		val fovRange = Math.min(leftMostAngle, rightMostAngle)..Math.max(leftMostAngle, rightMostAngle)
+		world.mapData.filter { it.isSolid }.
+				forEach { 
+					val targetAngle = calculateAnge(x, y, it.x, it.y)
+					if (targetAngle in fovRange) {
+						val worldObjectBetween = world.findObjectUsingRayCasting(x, y, targetAngle)
+						if (it == worldObjectBetween.obj) {
+							if (!vision.contains(worldObjectBetween.obj)) vision.add(worldObjectBetween.obj)
+						}
+					}
+				}
+		println(vision.size)
+		return vision.map { SeenWorldObject(it, it.x, it.y) }.toArrayList()
 	}
 	
 	/**
