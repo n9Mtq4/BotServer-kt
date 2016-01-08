@@ -111,7 +111,14 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 		
 		while (isInBounds(cx, cy)) {
 //			if the WorldObject at (cx, cy) isn't nothing, return it with the pos
-			if (cx.toInt() == x && cy.toInt() == y) continue // don't include this block
+			if (cx.toInt() == x && cy.toInt() == y) {
+//				TODO: don't repeat the update location
+//				update the ray casting location
+				cx += dx
+				cy += dy
+//				don't include this block
+				continue
+			}
 			if (get(cx, cy) !is WorldNothing) return SeenWorldObject(get(cx, cy), cx.toInt(), cy.toInt())
 //			update the ray casting location
 			cx += dx
@@ -307,6 +314,8 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 	
 	fun assertWorldBounds(x: Double, y: Double) = assertWorldBounds(x.toInt(), y.toInt())
 	fun assertWorldBounds(x: Int, y: Int) = assertTrue(isInBounds(x, y), "position ($x, $y) are not in world bounds")
+	
+	fun isBorder(x: Int, y: Int) = x == 0 || y == 0 || x == width - 1 || y == height - 1
 	
 	internal fun toGraphicsString(): String {
 		var data = ""

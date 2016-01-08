@@ -66,3 +66,6 @@ fun normalizeAngle(angle: Double): Double {
 	while (newAngle > 180) newAngle -= 360
 	return newAngle
 }
+
+fun calculateAnge(x: Int, y: Int, x1: Int, y1: Int) = calculateAnge(x.toDouble(), y.toDouble(), x1.toDouble(), y1.toDouble())
+fun calculateAnge(x: Double, y: Double, x1: Double, y1: Double) = Math.atan2((y1 - y), (x1 - x)).toDegrees()

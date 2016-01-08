@@ -27,7 +27,7 @@ sealed class WorldGenerators {
 	 * */
 	object Empty : WorldGeneratorBehavior {
 		override fun getObjectAt(x: Int, y: Int, world: World): WorldObject {
-			if (x == 0 || y == 0 || x == world.width - 1 || y == world.height - 1) return Wall // edges
+			if (world.isBorder(x, y)) return Wall(world, x, y) // edges
 //			things in the middle of the map, like bots or flags
 			if (x == world.width / 2) {
 				when (y) {

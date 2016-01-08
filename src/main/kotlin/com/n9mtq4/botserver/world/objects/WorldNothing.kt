@@ -23,7 +23,15 @@ object WorldNothing : WorldObject {
 	override val world: World
 		get() = throw UnsupportedOperationException()
 	override var x = -1
+		get() {
+//			System.err.println("[WARNING]: getting x on WorldNothing")
+			return -1
+		}
 	override var y = -1
+		get() {
+//			System.err.println("[WARNING]: getting y on WorldNothing")
+			return -1
+		}
 	override var isSolid = false
 	override val id = ID_NOTHING
 	override val uuid = -1

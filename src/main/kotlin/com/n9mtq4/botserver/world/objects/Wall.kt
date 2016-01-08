@@ -18,14 +18,10 @@ import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
  * 
  * @author Will "n9Mtq4" Bresnahan
  */
-object Wall : WorldObject {
+class Wall(override val world: World, override var x: Int, override var y: Int) : WorldObject {
 	
-	override val world: World
-		get() = throw UnsupportedOperationException()
-	override var x = -1
-	override var y = -1
 	override var isSolid = true
 	override val id = ID_WALL
-	override val uuid = -1
+	override val uuid = world.getNextUUID()
 	
 }
