@@ -201,8 +201,8 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 		val obj = get(x, y)
 		
 //		move the world objects pos
-		obj.x = x
-		obj.y = y
+		obj.x = nx
+		obj.y = ny
 		
 //		change the location in the map array of the world object
 		set(nx, ny, obj)
