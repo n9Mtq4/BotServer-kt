@@ -1,7 +1,7 @@
 package com.n9mtq4.botserver.world.objects
 
 import com.n9mtq4.botserver.world.World
-import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
+import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
 
 /**
  * Created by will on 12/8/15 at 5:54 PM.
@@ -18,11 +18,13 @@ import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
  * 
  * @author Will "n9Mtq4" Bresnahan
  */
-class Wall(override val world: World, override var x: Int, override var y: Int) : WorldObject {
+class Wall(override val world: World, override var x: Int, override var y: Int) : HealthWorldObject {
 	
 	override var isSolid = true
 	override val id = ID_WALL
 	override val uid = world.getNextUID()
 	override val isGhost = false
+	override var health = 100
+	override var invincible = true
 	
 }

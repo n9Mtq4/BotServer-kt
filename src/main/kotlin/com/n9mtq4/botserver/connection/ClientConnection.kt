@@ -6,6 +6,7 @@ import com.n9mtq4.botserver.bot.Bot
 import com.n9mtq4.botserver.world.World
 import com.n9mtq4.botserver.world.objects.interfaces.Entity
 import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
+import com.n9mtq4.botserver.world.objects.interfaces.Teamable
 import com.n9mtq4.kotlin.extlib.io.errPrintln
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
@@ -33,11 +34,12 @@ import java.net.Socket
 class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : InputHandler, OutputHandler {
 	
 	companion object {
-		private val MOVE_REGEX = "/^MOVE -?[01] -?[01]$/ig".toRegex()
-		private val TURN_REGEX = """/^TURN -?(\d|[1-9]\d|[1-2]\d{2}|3[0-5]\d|360)$/ig""".toRegex() // https://github.com/dimka665/range-regex
-		private val SHOOT_REGEX = "/^SHOOT$/ig".toRegex()
-		private val PLACE_REGEX = "/^PLACE -?[01] -?[01]$/ig".toRegex()
-		private val SPAWN_REGEX = "/^SPAWN -?[01] -?[01]$/ig".toRegex()
+		private val MOVE_REGEX = "^MOVE -?[01] -?[01]$".toRegex(RegexOption.IGNORE_CASE)
+		private val TURN_REGEX = """^TURN -?(\d|[1-9]\d|[1-2]\d{2}|3[0-5]\d|360)$""".toRegex(RegexOption.IGNORE_CASE) // https://github.com/dimka665/range-regex
+		private val SHOOT_REGEX = "^SHOOT$".toRegex(RegexOption.IGNORE_CASE)
+		private val PLACE_REGEX = "^PLACE -?[01] -?[01]$".toRegex(RegexOption.IGNORE_CASE)
+		private val SPAWN_REGEX = "^SPAWN -?[01] -?[01]$".toRegex(RegexOption.IGNORE_CASE)
+		private val END_REGEX = "^END$".toRegex(RegexOption.IGNORE_CASE)
 	}
 	
 	internal val client: Socket
@@ -75,19 +77,24 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 		val input = readInputTurnData()
 		input.split("\n").forEach { line ->
 			
+			if (line.isNullOrBlank()) return@forEach
+			
 			try {
 				
 				line.run { when {
 					
-					matches(MOVE_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.move(it[0], it[1]) }
-					matches(TURN_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.turn(it[0]) }
+					matches(MOVE_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.move(it[0], it[1]) }
+					matches(TURN_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.turn(it[0]) }
 					matches(SHOOT_REGEX) -> bot.shoot()
-					matches(PLACE_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.place(it[0], it[1]) }
-					matches(SPAWN_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.spawnBot(it[0], it[1]) }
+					matches(PLACE_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.place(it[0], it[1]) }
+					matches(SPAWN_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.spawnBot(it[0], it[1]) }
+					matches(END_REGEX) -> return
+					else -> println("Invalid Command from team ${team.teamNumber}: '$line'")
 					
 				} }
 				
 			}catch (e: Exception) {
+				e.printStackTrace() // TODO: debug info, remove later
 //				This should really never happen. The regex should sanitize every request
 				errPrintln("WARNING: regex failed to sanitize input from client: '$line'")
 			}
@@ -97,16 +104,18 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 	
 	override fun send(bot: Bot, world: World, team: Team) {
 		
+		write("START_TURN")
+		
 		val json = JSONObject() // the json text
 		
 //		bot's data
+		json.put("uid", bot.uid)
 		json.put("x", bot.x)
 		json.put("y", bot.y)
 		json.put("angle", bot.angle)
 		json.put("health", bot.health)
 		json.put("ap", bot.actionPoints)
 		json.put("mana", team.mana)
-		json.put("uid", bot.uid)
 		
 		val vision = JSONArray() // array of things we can see
 		
@@ -118,9 +127,9 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 			
 //			SeenWorldObject data
 			visionObj.put("type", it.javaClass.simpleName.toUpperCase()) // type
-			if (it is Bot) visionObj.put("team", it.id) // team
 			visionObj.put("x", it.x) // x
 			visionObj.put("y", it.y) // y
+			if (it is Teamable) visionObj.put("team", it.teamNum) // team
 			if (it is Entity) visionObj.put("angle", it.angle) // angle
 			if (it is HealthWorldObject) visionObj.put("health", it.health) // health
 			

@@ -14,5 +14,4 @@ package com.n9mtq4.botserver
 val SERVER_VERSION = "v1.0.5-beta" // The version of the server that the client must have compliance with
 val SOCKET_PORT = 2000
 val API_LEVEL = 1
-val MAX_TURNS = 1000
-val CLIENT_TURN_TIMER = 500L
+val MAX_TURNS = 100

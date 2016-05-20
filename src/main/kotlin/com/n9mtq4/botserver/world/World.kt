@@ -41,6 +41,8 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 		this.win = -1
 	}
 	
+	fun createNewBot(x: Int, y: Int, team: Int) = Bot(this, game.getTeamByNumber(team), x, y)
+	
 	/**
 	 * Goes through everything in the world and calls its tick method.
 	 * The [WorldObject] must implement [Tickable].
@@ -63,7 +65,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * @param teamNumber the team number of the bot
 	 * */
 	fun spawnBotAt(x: Int, y: Int, teamNumber: Int) {
-		set(x, y, Bot(this, game.getTeamByNumber(teamNumber), x, y))
+		set(x, y, createNewBot(x, y, teamNumber))
 	}
 	
 	/**
@@ -242,6 +244,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 		
 	}
 	
+	operator fun minusAssign(obj: WorldObject) = remove(obj)
 	/**
 	 * Removes the [WorldObject] [obj]
 	 * from the world.
@@ -275,7 +278,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * @return The [WorldObject] at that position
 	 * @see set
 	 * */
-	fun get(x: Double, y: Double) = get(x.toInt(), y.toInt())
+	operator fun get(x: Double, y: Double) = get(x.toInt(), y.toInt())
 	
 	/**
 	 * Gets the [WorldObject] at ([x], [y]).
@@ -285,7 +288,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * @return The [WorldObject] at that position
 	 * @see set
 	 * */
-	fun get(x: Int, y: Int): WorldObject {
+	operator fun get(x: Int, y: Int): WorldObject {
 		assertWorldBounds(x, y)
 		return mapData[x + y * width] // convert (x, y) to index
 	}
@@ -299,7 +302,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * @param obj the new [WorldObject] to put in that position
 	 * @see get
 	 * */
-	fun set(x: Double, y: Double, obj: WorldObject) = set(x.toInt(), y.toInt(), obj)
+	operator fun set(x: Double, y: Double, obj: WorldObject) = set(x.toInt(), y.toInt(), obj)
 	
 	/**
 	 * Sets the world object at ([x], [y]) to the new
@@ -310,7 +313,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * @param obj the new [WorldObject] to put in that position
 	 * @see get
 	 * */
-	fun set(x: Int, y: Int, obj: WorldObject) {
+	operator fun set(x: Int, y: Int, obj: WorldObject) {
 		assertWorldBounds(x, y)
 		mapData[x + y * width] = obj // convert (x, y) to index
 	}
@@ -320,6 +323,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * 
 	 * @return the next available UID
 	 * */
+	@JvmName("getNextUID")
 	internal fun getNextUID(): Int {
 		return uidManager++
 	}

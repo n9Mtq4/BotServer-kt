@@ -6,6 +6,7 @@ import com.n9mtq4.botserver.world.World
 import com.n9mtq4.botserver.world.getDistanceBetween
 import com.n9mtq4.botserver.world.objects.interfaces.Entity
 import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
+import com.n9mtq4.botserver.world.objects.interfaces.Teamable
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
 import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
 
@@ -20,7 +21,7 @@ import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
  * @param y the y pos of the bot in the world
  * @author Will "n9Mtq4" Bresnahan
  */
-class Bot(override val world: World, val team: Team, override var x: Int, override var y: Int) : Entity, Tickable {
+class Bot(override val world: World, val team: Team, override var x: Int, override var y: Int) : Entity, Tickable, Teamable {
 	
 	override var angle: Int = if (team.teamNumber == 1) 270 else 90
 	override var health: Int = BOT_HEALTH
@@ -29,6 +30,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	override val id = team.teamNumber // bot id is the same as the team number
 	override val uid = world.getNextUID()
 	override val isGhost = false
+	override val teamNum = id
 	
 	/**
 	 * Number of movements the bot can do in one turn.
@@ -43,6 +45,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * shows a circle VIEW_DISTANCE tiles around the
 	 * bot
 	 * */
+	@JvmName("generateVision") // fixes the internal. Without it, ClientConnection thinks it is com.n9mtq4.botserver.bot.Bot.generateVision$BotServer_main()Ljava/util/List; 
 	internal fun generateVision(): List<WorldObject> {
 		return world.mapData.filterNot { it.isGhost }.filter { getDistanceBetween(this, it) <= VIEW_DISTANCE }
 	}

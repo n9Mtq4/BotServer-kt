@@ -3,6 +3,7 @@ package com.n9mtq4.botserver.world.objects
 import com.n9mtq4.botserver.bot.Bot
 import com.n9mtq4.botserver.world.BOTS_TO_WIN
 import com.n9mtq4.botserver.world.World
+import com.n9mtq4.botserver.world.objects.interfaces.Teamable
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
 import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
 
@@ -18,7 +19,7 @@ import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
  * @param loyalty what team this flag belongs to
  * @author Will "n9Mtq4" Bresnahan
  */
-class Flag(override val world: World, override var x: Int, override var y: Int, val loyalty: Int) : WorldObject, Tickable {
+class Flag(override val world: World, override var x: Int, override var y: Int, override val teamNum: Int) : WorldObject, Tickable, Teamable {
 	
 	override var isSolid = true
 	override val id = ID_FLAG
@@ -52,9 +53,9 @@ class Flag(override val world: World, override var x: Int, override var y: Int, 
 //		count how many bots we currently have
 		val teamBots = 	world.mapData.filter 	{ it is Bot }. // filter by bots
 						map 					{ it.id }. // get the team numbers
-						filter 					{ it == loyalty }. // filter by our team
+						filter 					{ it == teamNum }. // filter by our team
 						size // count them
-		if (teamBots == 0) world.spawnBotAt(x, y + if (loyalty == 1) 1 else -1, loyalty) // spawn a bot in front of the flag, if we have 0
+		if (teamBots == 0) world.spawnBotAt(x, y + if (teamNum == 1) 1 else -1, teamNum) // spawn a bot in front of the flag, if we have 0
 	}
 	
 	/**
@@ -67,10 +68,10 @@ class Flag(override val world: World, override var x: Int, override var y: Int, 
 		
 		val surroundingEnemyBots = surrounding.	filter 	{ it is Bot }. // filter by bot
 												map 	{ it.id }. // get the bot team
-												filter 	{ it != loyalty }. // if it isn't our team
+												filter 	{ it != teamNum }. // if it isn't our team
 												size // count them all
 		
-		if (surroundingEnemyBots >= BOTS_TO_WIN) world.win = if (loyalty == 1) 2 else 1 // TODO: bad, not very extendable
+		if (surroundingEnemyBots >= BOTS_TO_WIN) world.win = if (teamNum == 1) 2 else 1 // TODO: bad, not very extendable
 		
 	}
 	
