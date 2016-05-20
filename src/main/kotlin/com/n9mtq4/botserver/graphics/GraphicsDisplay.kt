@@ -97,11 +97,8 @@ class GraphicsDisplay : PatternImage(DISPLAY_WIDTH * SCALE, DISPLAY_HEIGHT * SCA
 		
 //		shooting data
 		turnLog.forEach { 
-			it.split(",").map { it.map { it.toInt() } }. // parses them all as ints
-					forEach { // then goes through all the array of 3 ints
-//						an array that looks like {x, y, deg}
-						pixelRender.drawLine(it[0], it[1], it[2])
-					}
+			val list = it.split(",").map { it.toInt() }
+			pixelRender.drawLine(list[0], list[1], list[2])
 		}
 		
 		patternContainer.render()
