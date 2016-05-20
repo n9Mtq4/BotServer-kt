@@ -38,7 +38,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 //		so long as the only isSolid false thing is WorldNothing
 		this.mapData = Array(width * height, { index -> generator.getObjectAt(index % width, index / width, this)})
 		this.turnLog = ArrayList<String>()
-		this.win = -1
+		this.win = 0 // win is 0 if there is nothing yet
 	}
 	
 	fun createNewBot(x: Int, y: Int, team: Int) = Bot(this, game.getTeamByNumber(team), x, y)
@@ -54,6 +54,8 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	fun tick() {
 		mapData.filter 	{ it is Tickable }.
 				forEach { (it as Tickable).tick() }
+//		clear the turn log
+		turnLog.clear()
 	}
 	
 	/**

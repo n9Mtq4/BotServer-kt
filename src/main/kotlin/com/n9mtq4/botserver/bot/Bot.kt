@@ -160,7 +160,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		if (target is HealthWorldObject) target.dealDamage(SHOOT_DAMAGE) // if we can shoot it, then shoot it
 		
 //		add this to the turn file, so we can see the shot
-		world.turnLog.run { this[lastIndex] += "$x,$y,$angle " }
+		world.turnLog += "$x,$y,$angle"
 		
 	}
 	

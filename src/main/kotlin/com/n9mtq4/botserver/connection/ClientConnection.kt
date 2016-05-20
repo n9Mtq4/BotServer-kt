@@ -145,6 +145,10 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 		
 	}
 	
+	override fun endGame(data: String) {
+		write(data)
+	}
+	
 	/**
 	 * Reads all the clients actions for this turn.
 	 * */

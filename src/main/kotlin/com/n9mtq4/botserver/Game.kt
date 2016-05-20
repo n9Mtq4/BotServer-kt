@@ -1,6 +1,7 @@
 package com.n9mtq4.botserver
 
 import com.n9mtq4.botserver.connection.ClientConnection
+import com.n9mtq4.botserver.graphics.GameDisplayer
 import com.n9mtq4.botserver.world.WORLD_HEIGHT
 import com.n9mtq4.botserver.world.WORLD_WIDTH
 import com.n9mtq4.botserver.world.World
@@ -22,7 +23,7 @@ import java.net.ServerSocket
  * @property team2 the [Team] for team #2. (as soon as [run] is called, this will have a value)
  * @author Will "n9Mtq4" Bresnahan
  */
-open class Game : Runnable {
+open class Game(val renderer: GameDisplayer? = null) : Runnable {
 	
 	val serverSocket: ServerSocket
 	lateinit var world: World // TODO: bad find a way to make it a val
@@ -85,12 +86,20 @@ open class Game : Runnable {
 			team1.processTurn(world)
 			team2.processTurn(world)
 			
+			renderer?.render(world, world.turnLog)
 			gameWriter.tick() // write this turn's data
 			world.tick() // tick the world
 			
 //			check if a team has won
 			if (world.win > 0) {
-//				a team has!
+//				a team has won!
+				if (world.win == 1) {
+					team1.outputHandler.endGame("WIN")
+					team2.outputHandler.endGame("LOOSE")
+				}else {
+					team1.outputHandler.endGame("LOOSE")
+					team2.outputHandler.endGame("WIN")
+				}
 				gameWriter.printWriter.println("WIN ${world.win}") // record their winning
 				break; // end the game
 			}
@@ -99,7 +108,13 @@ open class Game : Runnable {
 			
 		}
 		
-		gameWriter.printWriter.println("DRAW") // no one wins :(
+		renderer?.gameOver(world.win) // FIXME: game over doesn't yet show the end of the game!
+		
+		if (world.win > 0) {
+			team1.outputHandler.endGame("DRAW")
+			team2.outputHandler.endGame("DRAW")
+			gameWriter.printWriter.println("DRAW") // no one wins :(
+		}
 		
 	}
 	
