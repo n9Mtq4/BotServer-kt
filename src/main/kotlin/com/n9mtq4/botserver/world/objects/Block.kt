@@ -25,6 +25,8 @@ class Block(override val world: World, override var x: Int, override var y: Int)
 	/**@see com.n9mtq4.botserver.world.objects.interfaces.WorldObject.id]*/
 	override val id = ID_BLOCK
 	/**@see com.n9mtq4.botserver.world.object.interfaces.WorldObject.uuid*/
-	override val uuid = world.getNextUUID()
+	override val uid = world.getNextUID()
+	/** @see com.n9mtq4.botserver.world.object.interfaces.WorldObject.isGhost */
+	override val isGhost = false
 	
 }

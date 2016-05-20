@@ -19,10 +19,13 @@ package com.n9mtq4.botserver.bot
  * @property SHOOT_COST how much it costs to shoot (action points)
  * @property PLACE_COST how much it costs to place a block (mana)
  * @property SPAWN_COST how much it costs to spawn a bot (mana)
+ * @property SPAWN_MANA_COST The amount of mana that it costs to spawn a new bot
+ * @property PLACE_MANA_COST The amount of mana that it costs to place a new block
  * 
  * @author Will "n9Mtq4" Bresnahan
  */
-val FOV = 90
+val FOV = 90 // Unused
+val VIEW_DISTANCE = 50
 
 val SHOOT_DAMAGE = 50
 
@@ -33,10 +36,12 @@ val MAX_BOT_HEALTH = 150
 val DEFAULT_ACTION_POINTS = 10
 val DEFAULT_MANA = 10
 val MAX_MANA = 100
-val DELTA_MANA = 1
+val DELTA_MANA = 5
 
 val MOVE_COST = 1
 val TURN_COST = 20 // higher is lower - totalCost = angle / TURN_COST
 val SHOOT_COST = 1
-val PLACE_COST = 1
-val SPAWN_COST = 5
+val PLACE_COST = 10
+val SPAWN_COST = 10
+val SPAWN_MANA_COST = 50
+val PLACE_MANA_COST = 20

@@ -33,6 +33,12 @@ interface WorldObject {
 	 * */
 	@Deprecated("not fully supported with movement")
 	var isSolid: Boolean
+	
+	/**
+	* Can this object be seen?
+	* */
+	val isGhost: Boolean
+	
 	/**
 	 * The id number for this [WorldObject].
 	 * This is used when exporting to the clients.
@@ -44,6 +50,6 @@ interface WorldObject {
 	 * Initialize with ```override val uuid = world.getNextUUID()```
 	 * This should be -1 for singletons
 	 * */
-	val uuid: Int
+	val uid: Int
 	
 }

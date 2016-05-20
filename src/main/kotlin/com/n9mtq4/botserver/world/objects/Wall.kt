@@ -22,6 +22,7 @@ class Wall(override val world: World, override var x: Int, override var y: Int) 
 	
 	override var isSolid = true
 	override val id = ID_WALL
-	override val uuid = world.getNextUUID()
+	override val uid = world.getNextUID()
+	override val isGhost = false
 	
 }

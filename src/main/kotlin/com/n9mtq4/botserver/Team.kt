@@ -3,7 +3,8 @@ package com.n9mtq4.botserver
 import com.n9mtq4.botserver.bot.DEFAULT_MANA
 import com.n9mtq4.botserver.bot.DELTA_MANA
 import com.n9mtq4.botserver.bot.MAX_MANA
-import com.n9mtq4.botserver.connection.ClientConnection
+import com.n9mtq4.botserver.connection.InputHandler
+import com.n9mtq4.botserver.connection.OutputHandler
 import com.n9mtq4.botserver.world.World
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
 
@@ -14,7 +15,7 @@ import com.n9mtq4.botserver.world.objects.interfaces.Tickable
  * @param clientConnection the [ClientConnection] used to talk to the client
  * @author Will "n9Mtq4" Bresnahan
  */
-data class Team(val teamNumber: Int, val clientConnection: ClientConnection) : Tickable {
+data class Team(val teamNumber: Int, val outputHandler: OutputHandler, val inputHandler: InputHandler) : Tickable {
 	
 	/**
 	 * Stays the same over multiple turns. (w/ gradual increasing)
@@ -56,17 +57,10 @@ data class Team(val teamNumber: Int, val clientConnection: ClientConnection) : T
 		world.getAllBotsByTeam(teamNumber).forEach { bot ->
 			
 //			write to the client
-			clientConnection.startTurnSend() // START_TURN
-			clientConnection.writeBot(bot, world, this) // sends the json bot w/ vision
-			clientConnection.endTurnSend() // nothing for now, again jake's crappy ruby api support holding us back
-			
-//			give the client half a second
-//			Thread.sleep(CLIENT_TURN_TIMER)
+			outputHandler.send(bot, world, this)
 			
 //			read from the client
-			val data = clientConnection.readInputTurnData() // read
-//			process
-			data.split("\n").forEach { line -> clientConnection.decoder.decodeTurnLine(line, bot, world) }
+			inputHandler.receive(bot, world, this)
 			
 		}
 		tick() // team tick

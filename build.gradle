@@ -11,14 +11,19 @@ repositories {
     mavenCentral()
 }
 
+/*
+* Libs include:
+* KotlinExtLib.jar - https://github.com/n9Mtq4/KotlinExtLib
+* */
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile fileTree(dir: 'libs/', include: ['*.jar', "*.zip"])
     compile "com.googlecode.json-simple:json-simple:1.1.1"
 }
 
 buildscript {
-    ext.kotlin_version = '1.0.0-beta-3595'
+    ext.kotlin_version = '1.0.2'
     repositories {
         mavenCentral()
     }

@@ -1,10 +1,14 @@
 package com.n9mtq4.botserver.connection
 
+import com.n9mtq4.botserver.SERVER_VERSION
 import com.n9mtq4.botserver.Team
 import com.n9mtq4.botserver.bot.Bot
-import com.n9mtq4.botserver.connection.decode.SocketDecoder
-import com.n9mtq4.botserver.connection.encode.SocketEncoder
 import com.n9mtq4.botserver.world.World
+import com.n9mtq4.botserver.world.objects.interfaces.Entity
+import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
+import com.n9mtq4.kotlin.extlib.io.errPrintln
+import org.json.simple.JSONArray
+import org.json.simple.JSONObject
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -26,7 +30,15 @@ import java.net.Socket
  * @see SocketDecoder
  * @author Will "n9Mtq4" Bresnahan
  */
-class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val encoder: SocketEncoder, val decoder: SocketDecoder) {
+class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : InputHandler, OutputHandler {
+	
+	companion object {
+		private val MOVE_REGEX = "/^MOVE -?[01] -?[01]$/ig".toRegex()
+		private val TURN_REGEX = """/^TURN -?(\d|[1-9]\d|[1-2]\d{2}|3[0-5]\d|360)$/ig""".toRegex() // https://github.com/dimka665/range-regex
+		private val SHOOT_REGEX = "/^SHOOT$/ig".toRegex()
+		private val PLACE_REGEX = "/^PLACE -?[01] -?[01]$/ig".toRegex()
+		private val SPAWN_REGEX = "/^SPAWN -?[01] -?[01]$/ig".toRegex()
+	}
 	
 	internal val client: Socket
 	internal val input: BufferedReader
@@ -43,47 +55,86 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val 
 		this.client = serverSocket.accept()
 		
 		this.input = BufferedReader(InputStreamReader(client.inputStream))
-//		this.output = PrintWriter(client.outputStream, true)
 		this.output = BufferedWriter(OutputStreamWriter(client.outputStream))
 		
-		write(encoder.encodeStartGame())
+		val clientCompliance = input.readLine()
+		if (clientCompliance != SERVER_VERSION) {
+			write("Incorrect server compliance. Please update your api.")
+			throw RuntimeException("A client has the wrong server compliance")
+		}
+		
+//		start up
+		write("START")
 		write(teamNumber.toString())
 		
 		println("connection established")
 		
 	}
 	
-	/**
-	 * Sends the start turn command
-	 * @see SocketEncoder.encodeStartTurn
-	 * */
-	internal fun startTurnSend() = write(encoder.encodeStartTurn())
+	override fun receive(bot: Bot, world: World, team: Team) {
+		val input = readInputTurnData()
+		input.split("\n").forEach { line ->
+			
+			try {
+				
+				line.run { when {
+					
+					matches(MOVE_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.move(it[0], it[1]) }
+					matches(TURN_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.turn(it[0]) }
+					matches(SHOOT_REGEX) -> bot.shoot()
+					matches(PLACE_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.place(it[0], it[1]) }
+					matches(SPAWN_REGEX) -> line.split(" ").drop(0).map { it.toInt() }.let { bot.spawnBot(it[0], it[1]) }
+					
+				} }
+				
+			}catch (e: Exception) {
+//				This should really never happen. The regex should sanitize every request
+				errPrintln("WARNING: regex failed to sanitize input from client: '$line'")
+			}
+			
+		}
+	}
 	
-	/**
-	 * Sends the turn end command.
-	 * 
-	 * IMPORTANT: doesn't do anything at all right now
-	 * 
-	 * @see SocketEncoder.encodeEndTurn
-	 * */
-	internal fun endTurnSend() {/* = write(encoder.encodeEndTurn())*/}
-	
-	/**
-	 * Writes the [bot] to the client.
-	 * 
-	 * @param bot the bot to write
-	 * @param world the world
-	 * @param team the team
-	 * @see SocketEncoder.encodeBotData
-	 * */
-	internal fun writeBot(bot: Bot, world: World, team: Team) = write(encoder.encodeBotData(bot, world, team))
-	
-	/**
-	 * Reads data from the socket / client.
-	 * 
-	 * @return the line read by the socket
-	 * */
-	internal fun read() = input.readLine()
+	override fun send(bot: Bot, world: World, team: Team) {
+		
+		val json = JSONObject() // the json text
+		
+//		bot's data
+		json.put("x", bot.x)
+		json.put("y", bot.y)
+		json.put("angle", bot.angle)
+		json.put("health", bot.health)
+		json.put("ap", bot.actionPoints)
+		json.put("mana", team.mana)
+		json.put("uid", bot.uid)
+		
+		val vision = JSONArray() // array of things we can see
+		
+//		go through every thing we can see
+		bot.generateVision().forEach {
+			
+//			make an object for it
+			val visionObj = JSONObject()
+			
+//			SeenWorldObject data
+			visionObj.put("type", it.javaClass.simpleName.toUpperCase()) // type
+			if (it is Bot) visionObj.put("team", it.id) // team
+			visionObj.put("x", it.x) // x
+			visionObj.put("y", it.y) // y
+			if (it is Entity) visionObj.put("angle", it.angle) // angle
+			if (it is HealthWorldObject) visionObj.put("health", it.health) // health
+			
+			vision.add(visionObj) // add it to the things we can see
+			
+		}
+		
+//		add the vision
+		json.put("vision", vision)
+		
+//		turn it into a string and write to client
+		write(json.toJSONString())
+		
+	}
 	
 	/**
 	 * Reads all the clients actions for this turn.
@@ -94,7 +145,7 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val 
 		do {
 			line = input.readLine()
 			text += line + "\n"
-		}while (decoder.shouldContinue(line))
+		}while (shouldContinue(line))
 		return text
 	}
 	
@@ -110,12 +161,8 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket, val 
 		output.flush() // make sure to flush!
 	}
 	
-	/**
-	 * Writes data to the socket followed by a new line.
-	 * 
-	 * @param msg the string to write
-	 * @see write
-	 * */
-	internal fun writeln(msg: String) = write(msg + "\n")
+	fun shouldContinue(line: String): Boolean {
+		return !line.contains("END")
+	}
 	
 }

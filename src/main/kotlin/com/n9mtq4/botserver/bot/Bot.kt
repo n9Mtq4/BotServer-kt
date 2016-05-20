@@ -1,17 +1,13 @@
 package com.n9mtq4.botserver.bot
 
 import com.n9mtq4.botserver.Team
-import com.n9mtq4.botserver.calculateAnge
-import com.n9mtq4.botserver.normalizeAngle
 import com.n9mtq4.botserver.safeAssert
-import com.n9mtq4.botserver.toDegrees
 import com.n9mtq4.botserver.world.World
-import com.n9mtq4.botserver.world.objects.Wall
+import com.n9mtq4.botserver.world.getDistanceBetween
 import com.n9mtq4.botserver.world.objects.interfaces.Entity
 import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
 import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
-import java.util.ArrayList
 
 /**
  * Created by will on 12/7/15 at 11:00 AM.
@@ -31,7 +27,8 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	override var invincible: Boolean = false
 	override var isSolid: Boolean = true
 	override val id = team.teamNumber // bot id is the same as the team number
-	override val uuid = world.getNextUUID()
+	override val uid = world.getNextUID()
+	override val isGhost = false
 	
 	/**
 	 * Number of movements the bot can do in one turn.
@@ -42,102 +39,12 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	var actionPoints = DEFAULT_ACTION_POINTS
 	
 	/**
-	 * Calculates an [ArrayList] of [SeenWorldObject]s that
-	 * are in the bot's field of view.
-	 * 
-	 * @return an [ArrayList] of [SeenWorldObject]s in the bot's fov
-	 * @see FOV
+	 * Generates the bot's vision
+	 * shows a circle VIEW_DISTANCE tiles around the
+	 * bot
 	 * */
-	@Deprecated("Doesn't work")
-	internal fun generateVision(): ArrayList<SeenWorldObject> {
-		
-		val vision = ArrayList<SeenWorldObject>() // store vision things here
-		var castingAngle = angle - (FOV / 2) // the current angle we are ray casting
-		
-		while (castingAngle < angle + (FOV / 2)) { // go through all angles in FOV
-			
-			val obj = world.findObjectUsingRayCasting(x, y, castingAngle) // ray cast
-			
-			if (!vision.contains(obj)) vision.add(obj) // if we haven't seen it yet, add it
-			
-			castingAngle++ // next angle
-			
-		}
-		
-		return vision
-		
-	}
-	
-	/**
-	 * Calculates an [ArrayList] of [SeenWorldObject]s that
-	 * are in the bot's field of view.
-	 * This is a more advanced version that is guarantied to
-	 * see everything possible. The [generateVision] is good,
-	 * but things can hide in between the lines, because they
-	 * are not very accurate. This attempts to fix that, by
-	 * varying the delta of the ray casting angle based on what
-	 * we are trying to see.
-	 *
-	 * @return an [ArrayList] of [SeenWorldObject]s in the bot's fov
-	 * @see FOV
-	 * */
-	@Deprecated("Doesn't work")
-	internal fun advancedVisionGeneration(): ArrayList<SeenWorldObject> {
-		
-		val vision = ArrayList<SeenWorldObject>()
-//		get the range of the FOV in degrees
-//		val minAngle = normalizeAngle((angle - FOV / 2).toDouble())
-//		val maxAngle = normalizeAngle((angle + FOV / 2).toDouble())
-//		println("min: $minAngle, max: $maxAngle")
-//		i know github handles tabs differently and this looks like a big mess.
-//		just download the file and view it in intellij
-		world.mapData.	filter 	{ it is Wall }. // get the borders of the map. // TODO: is borders
-						map 	{ Math.atan2((it.y - y).toDouble(), (it.x - x).toDouble()) }. // get the angle to it in radians //TODO: atan2 is expensive
-						map 	{ it.toDegrees() }. // we like degrees here
-						map 	{ normalizeAngle(it) }. // make sure we can work with it
-						filter 	{ Math.abs(it - angle) <= FOV / 2 }. // filter the angles if they are in my FOV
-						map 	{ world.findObjectUsingRayCasting(x, y, it) }. // ray cast to them
-						filter 	{ !vision.contains(it) }. // don't add the object multiple times
-						forEach { vision.add(it) } // add it
-		vision.filter { vision.indexOf(it) != vision.lastIndexOf(it) }.
-				forEach { println("duplicate!: $it") }
-		
-//		println(vision.size)
-		return vision
-		
-	}
-	
-	@Deprecated("Doesn't work")
-	internal fun advancedVisionGeneration2(): ArrayList<SeenWorldObject> {
-		val vision = ArrayList<SeenWorldObject>()
-		world.mapData.map { Math.atan2((it.y - y).toDouble(), (it.x - x).toDouble()) }.
-				map { it.toDegrees() }.
-				filter { Math.abs(it - angle) <= FOV / 2 }.
-				map { world.findObjectUsingRayCasting(x, y, it) }.
-				filter { !vision.contains(it) }.
-				forEach { vision.add(it) }
-		vision.filter { vision.indexOf(it) != vision.lastIndexOf(it) }.
-				forEach { println("duplicate!: $it") }
-		return vision
-	}
-	
-	internal fun jakesVisionGeneration(): ArrayList<SeenWorldObject> {
-		val vision = ArrayList<WorldObject>()
-		val leftMostAngle = angle - (FOV / 2)
-		val rightMostAngle = angle + (FOV / 2)
-		val fovRange = Math.min(leftMostAngle, rightMostAngle)..Math.max(leftMostAngle, rightMostAngle)
-		world.mapData.filter { it.isSolid }.
-				forEach { 
-					val targetAngle = calculateAnge(x, y, it.x, it.y)
-					if (targetAngle in fovRange) {
-						val worldObjectBetween = world.findObjectUsingRayCasting(x, y, targetAngle)
-						if (it == worldObjectBetween.obj) {
-							if (!vision.contains(worldObjectBetween.obj)) vision.add(worldObjectBetween.obj)
-						}
-					}
-				}
-		println(vision.size)
-		return vision.map { SeenWorldObject(it, it.x, it.y) }.toArrayList()
+	internal fun generateVision(): List<WorldObject> {
+		return world.mapData.filterNot { it.isGhost }.filter { getDistanceBetween(this, it) <= VIEW_DISTANCE }
 	}
 	
 	/**
@@ -181,7 +88,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		if (safeAssert(dy in -1..1, "movement out of bounds: $dy")) return
 		
 //		action point handling
-		if (assertPerformAction(calcMove(dx, dy))) return
+		if (assertActionPoints(calcMove(dx, dy))) return
 		
 //		move us
 		world.moveRel(this, dx, dy)
@@ -213,7 +120,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		if (safeAssert(angle in -360..360, "angle out of bounds: $angle")) return
 		
 //		action point handling
-		if (assertPerformAction(calcTurn(angle))) return
+		if (assertActionPoints(calcTurn(angle))) return
 		
 //		turn us
 		this.angle += angle
@@ -244,12 +151,13 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	fun shoot() {
 		
 //		action point handling
-		if (assertPerformAction(calcShoot())) return
+		if (assertActionPoints(calcShoot())) return
 		
 		val target = world.findObjectUsingRayCasting(x, y, angle) // find the first target
-		if (target.obj is HealthWorldObject) target.obj.dealDamage(SHOOT_DAMAGE) // if we can shoot it, then shoot it
-//		TODO: add this to the turn file, so we can see the shot
-		world.turnLog.add("$x,$y,$angle")
+		if (target is HealthWorldObject) target.dealDamage(SHOOT_DAMAGE) // if we can shoot it, then shoot it
+		
+//		add this to the turn file, so we can see the shot
+		world.turnLog.run { this[lastIndex] += "$x,$y,$angle " }
 		
 	}
 	
@@ -263,9 +171,8 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @see place
 	 * @see PLACE_COST
 	 * */
-	internal fun calcPlace(dx: Int, dy: Int) = PLACE_COST
-	
-//	TODO: apparently placing and spawning costs mana and action points!
+	internal fun calcPlaceAp(dx: Int, dy: Int) = PLACE_COST
+	internal fun calcPlaceMana(dx: Int, dy: Int) = PLACE_MANA_COST
 	
 	/**
 	 * Places a block at ([x] + [dx], [y] + [dy]), if
@@ -278,20 +185,21 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	fun place(dx: Int, dy: Int) {
 		
 //		mana handling
-		if (assertPerformMana(calcPlace(dx, dy))) return
+		if (assertActionManaPoints(calcPlaceAp(dx, dy), calcPlaceMana(dx, dy))) return
 		
 //		place a block - world.placeBlock does checking for a clear space
 		world.placeBlock(x + dx, y + dy)
 		
 	}
 	
-	internal fun calcSpawnBot(dx: Int, dy: Int) = SPAWN_COST
+	internal fun calcSpawnBotAp(dx: Int, dy: Int) = SPAWN_COST
+	internal fun calcSpawnBotMana(dx: Int, dy: Int) = SPAWN_MANA_COST
 	
 	@Deprecated("Not yet tested")
 	fun spawnBot(dx: Int, dy: Int) {
 		
-//		mana handling
-		if (assertPerformMana(calcSpawnBot(dx, dy))) return
+//		mana and ap handling
+		if (assertActionManaPoints(calcSpawnBotAp(dx, dy), calcSpawnBotMana(dx, dy))) return
 		
 //		convert to abs coords
 		val x = x + dx
@@ -312,7 +220,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @param need How many action points needed
 	 * @return true if there aren't enough action points, false otherwise
 	 * */
-	private fun assertPerformAction(need: Int): Boolean {
+	private fun assertActionPoints(need: Int): Boolean {
 		if (actionPoints - need < 0) return true // stop if we can't do it, failed
 		actionPoints -= need // deduct
 		return false // say it was successful
@@ -325,9 +233,25 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @param need How much mana is needed
 	 * @return true if there aren't enough mana, false otherwise
 	 * */
-	private fun assertPerformMana(need: Int): Boolean {
+	private fun assertManaPoints(need: Int): Boolean {
 		if (team.mana - need < 0) return true
 		team.mana -= need
+		return false
+	}
+	
+	/**
+	 * A method that checks to see if you can perform an action
+	 * If you can, it deducts the action and mana points from your total
+	 * 
+	 * @param apNeed How many action points needed
+	 * @param manaNeed How much mana is needed
+	 * */
+	private fun assertActionManaPoints(apNeed: Int, manaNeed: Int): Boolean {
+		if (actionPoints - apNeed < 0) return true // stop if we can't do it, failed
+		if (team.mana - manaNeed < 0) return true // stop if we can't do it, failed
+//		both passed, so remove the action points
+		actionPoints -= apNeed
+		team.mana -= manaNeed
 		return false
 	}
 	

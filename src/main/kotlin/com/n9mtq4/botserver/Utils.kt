@@ -1,5 +1,6 @@
 package com.n9mtq4.botserver
 
+import com.n9mtq4.kotlin.extlib.math.toDegrees
 import java.util.Random
 
 /**
@@ -18,27 +19,6 @@ import java.util.Random
  * if you use the same java.util.Random instance.
  * */
 val RANDOM = Random()
-
-/**
- * Converts degrees into radians.
- * 
- * @return the radians
- * */
-fun Int.toRadians() = Math.toRadians(this.toDouble())
-
-/**
- * Converts degrees into radians.
- * 
- * @return the radians
- * */
-fun Double.toRadians() = Math.toRadians(this)
-
-/**
- * Converts radians to degrees.
- * 
- * @return the degrees
- * */
-fun Double.toDegrees() = Math.toDegrees(this)
 
 /**
  * An assert that will print a warning message, but wont

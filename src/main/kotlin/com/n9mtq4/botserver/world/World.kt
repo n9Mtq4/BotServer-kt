@@ -2,16 +2,17 @@ package com.n9mtq4.botserver.world
 
 import com.n9mtq4.botserver.Game
 import com.n9mtq4.botserver.bot.Bot
-import com.n9mtq4.botserver.bot.SeenWorldObject
-import com.n9mtq4.botserver.toRadians
 import com.n9mtq4.botserver.world.generation.WorldGeneratorBehavior
 import com.n9mtq4.botserver.world.objects.Block
 import com.n9mtq4.botserver.world.objects.WorldNothing
 import com.n9mtq4.botserver.world.objects.interfaces.Tickable
 import com.n9mtq4.botserver.world.objects.interfaces.WorldObject
+import com.n9mtq4.kotlin.extlib.assertTrue
+import com.n9mtq4.kotlin.extlib.math.pow
+import com.n9mtq4.kotlin.extlib.math.sqrt
+import com.n9mtq4.kotlin.extlib.math.toRadians
 import java.util.ArrayList
 import java.util.Arrays
-import kotlin.test.assertTrue
 
 /**
  * Created by will on 12/7/15 at 10:58 AM.
@@ -25,12 +26,12 @@ import kotlin.test.assertTrue
  * @see com.n9mtq4.botserver.world.generation.WorldGenerators
  * @author Will "n9Mtq4" Bresnahan
  */
-public class World(val game: Game, val width: Int, val height: Int, generator: WorldGeneratorBehavior) {
+class World(val game: Game, val width: Int, val height: Int, generator: WorldGeneratorBehavior) {
 	
 	internal val mapData: Array<WorldObject>
 	internal val turnLog: ArrayList<String>
 	internal var win: Int
-	private var uuidManager: Int = 0
+	private var uidManager: Int = 0
 	
 	init {
 //		TODO: isSolid = false wont work properly with the movement system
@@ -98,7 +99,7 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 	 * @param angle the angle (degrees)
 	 * @return the first [WorldObject] along that line that isn't [WorldNothing]. Returns as [SeenWorldObject]
 	 * */
-	fun findObjectUsingRayCasting(x: Int, y: Int, angle: Double): SeenWorldObject {
+	fun findObjectUsingRayCasting(x: Int, y: Int, angle: Double): WorldObject {
 		
 //		t'is always good
 		assertWorldBounds(x, y)
@@ -119,7 +120,7 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 //				don't include this block
 				continue
 			}
-			if (get(cx, cy) !is WorldNothing) return SeenWorldObject(get(cx, cy), cx.toInt(), cy.toInt())
+			if (get(cx, cy) !is WorldNothing) return get(cx, cy)
 //			update the ray casting location
 			cx += dx
 			cy += dy
@@ -128,6 +129,21 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 //		we should always return something, so this is an error
 		throw RuntimeException("There are no walls on the map!")
 		
+	}
+	
+	/**
+	 * Calculates the angle between two world objects
+	 * 
+	 * @param wo the first world object
+	 * @param wo1 the second world object
+	 * @return the angle between the two objects
+	 * */
+	fun getAngleBetween(wo: WorldObject, wo1: WorldObject): Double { //TODO: should this be an int?
+		val x1 = wo.x
+		val y1 = wo.y
+		val x2 = wo1.x
+		val y2 = wo1.y
+		return Math.atan2((x1 - x2).toDouble(), (y1 - y2).toDouble())
 	}
 	
 	/**
@@ -186,7 +202,7 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 		
 //		change the location in the map array of the world object
 		set(nx, ny, obj)
-		set(x, y, WorldNothing)
+		set(x, y, WorldNothing(this, x, y))
 		
 	}
 	
@@ -247,7 +263,7 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 		assertWorldBounds(x, y)
 		
 //		remove it from the world
-		set(x, y, WorldNothing)
+		set(x, y, WorldNothing(this, x, y))
 		
 	}
 	
@@ -300,12 +316,12 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 	}
 	
 	/**
-	 * Gets the next UUID for a [WorldObject].
+	 * Gets the next UID for a [WorldObject].
 	 * 
-	 * @return the next available UUID
+	 * @return the next available UID
 	 * */
-	internal fun getNextUUID(): Int {
-		return uuidManager++
+	internal fun getNextUID(): Int {
+		return uidManager++
 	}
 	
 //	TODO: add documentation
@@ -346,3 +362,8 @@ public class World(val game: Game, val width: Int, val height: Int, generator: W
 	}
 	
 }
+
+/** distance between two points */
+fun getDistanceBetween(x1: Int, y1: Int, x2: Int, y2: Int) = (((x1 - x2) pow 2) + ((y1 - y2) pow 2)).sqrt()
+fun getDistanceBetween(w1: WorldObject, w2: WorldObject) = getDistanceBetween(w1.x, w2.y, w2.x, w2.y)
+fun getDistanceBetween(x1: Int, y1: Int, w: WorldObject) = getDistanceBetween(x1, y1, w.x, w.y)

@@ -22,7 +22,8 @@ class Flag(override val world: World, override var x: Int, override var y: Int, 
 	
 	override var isSolid = true
 	override val id = ID_FLAG
-	override val uuid = world.getNextUUID()
+	override val uid = world.getNextUID()
+	override val isGhost = false
 	
 	/**
 	 * The flag's tick method.

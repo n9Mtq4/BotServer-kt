@@ -37,7 +37,7 @@ sealed class WorldGenerators {
 					world.height - 3 -> return Bot(world, world.game.getTeamByNumber(2), x, y) // team 2's bot
 				}
 			}
-			return WorldNothing // everything else
+			return WorldNothing(world, x, y) // everything else
 		}
 	}
 	
@@ -51,7 +51,7 @@ sealed class WorldGenerators {
 			val emptysValue = Empty.getObjectAt(x, y, world)
 			if (emptysValue !is WorldNothing) return emptysValue
 			if (RANDOM.nextFloat() <= BLOCK_PERCENTAGE) return Block(world, x, y) // random chance of a block
-			return WorldNothing // nothing else to do, so an empty space
+			return WorldNothing(world, x, y) // nothing else to do, so an empty space
 		}
 	}
 	
@@ -68,7 +68,7 @@ sealed class WorldGenerators {
 			if (y > (world.height / 3) * 1 && y < (world.height / 3) * 2) {
 				if (RANDOM.nextFloat() <= BLOCK_PERCENTAGE) return Block(world, x, y) // random chance of a block
 			}
-			return WorldNothing // nothing else to do, so an empty space
+			return WorldNothing(world, x, y) // nothing else to do, so an empty space
 		}
 	}
 	

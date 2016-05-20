@@ -1,8 +1,6 @@
 package com.n9mtq4.botserver
 
 import com.n9mtq4.botserver.connection.ClientConnection
-import com.n9mtq4.botserver.connection.decode.SocketDecoders
-import com.n9mtq4.botserver.connection.encode.SocketEncoders
 import com.n9mtq4.botserver.world.WORLD_HEIGHT
 import com.n9mtq4.botserver.world.WORLD_WIDTH
 import com.n9mtq4.botserver.world.World
@@ -24,15 +22,15 @@ import java.net.ServerSocket
  * @property team2 the [Team] for team #2. (as soon as [run] is called, this will have a value)
  * @author Will "n9Mtq4" Bresnahan
  */
-class Game : Runnable {
+open class Game : Runnable {
 	
 	val serverSocket: ServerSocket
-	var world: World? = null // TODO: bad find a way to make it a val
-	var gameWriter: GameWriter? = null // TODO: bad find a way to make it a val
+	lateinit var world: World // TODO: bad find a way to make it a val
+	lateinit var gameWriter: GameWriter // TODO: bad find a way to make it a val
 	var turnNumber: Int
 	
-	var team1: Team? = null
-	var team2: Team? = null
+	lateinit var team1: Team
+	lateinit var team2: Team
 	
 	/**
 	 * Initializes the fields
@@ -46,8 +44,8 @@ class Game : Runnable {
 	
 	fun getTeamByNumber(teamNumber: Int): Team {
 		return when (teamNumber) {
-			1 -> team1!!
-			2 -> team2!!
+			1 -> team1
+			2 -> team2
 			else -> throw IllegalArgumentException("No team with number: $teamNumber")
 		}
 	}
@@ -55,14 +53,13 @@ class Game : Runnable {
 	/**
 	 * Initializes the teams and their connections
 	 * */
-	fun initConnections() {
+	open fun initConnections() {
 		
-//		TODO: change to KotlinClient when there are unique features
-		val team1Connection = ClientConnection(1, serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
-		val team2Connection = ClientConnection(2, serverSocket, SocketEncoders.RubyClient, SocketDecoders.RubyClient)
+		val team1Connection = ClientConnection(1, serverSocket)
+		val team2Connection = ClientConnection(2, serverSocket)
 		
-		team1 = Team(1, team1Connection)
-		team2 = Team(2, team2Connection)
+		team1 = Team(1, team1Connection, team1Connection)
+		team2 = Team(2, team2Connection, team2Connection)
 		
 	}
 	
@@ -78,30 +75,31 @@ class Game : Runnable {
 		
 //		generate world
 		this.world = World(this, WORLD_WIDTH, WORLD_HEIGHT, WorldGenerators.StrategicRandom)
-		this.gameWriter = GameWriter(world!!, File("game.txt")) // TODO: get the file from cla?
+		this.gameWriter = GameWriter(world, File("game.txt"))
 		
 		while (turnNumber < MAX_TURNS) {
 			
 			println("Processing turn: $turnNumber")
 			
-//			TODO: ruby server does each teams bot back and forth
-//			process the teams turn, if initConnections didn't work, we want the NPE
-			team1!!.processTurn(world!!)
-			team2!!.processTurn(world!!)
+//			process the teams turn
+			team1.processTurn(world)
+			team2.processTurn(world)
 			
-			gameWriter!!.tick() // write this turn's data
-			world!!.tick() // tick the world
+			gameWriter.tick() // write this turn's data
+			world.tick() // tick the world
+			
 //			check if a team has won
-			if (world!!.win > 0) {
+			if (world.win > 0) {
 //				a team has!
-				gameWriter!!.printWriter.println("WIN ${world!!.win}") // record their winning
+				gameWriter.printWriter.println("WIN ${world.win}") // record their winning
 				break; // end the game
 			}
+			
 			turnNumber++ // next turn
 			
 		}
 		
-		gameWriter!!.printWriter.println("DRAW") // no one wins :(
+		gameWriter.printWriter.println("DRAW") // no one wins :(
 		
 	}
 	
