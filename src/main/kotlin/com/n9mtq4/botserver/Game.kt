@@ -91,30 +91,19 @@ open class Game(val renderer: GameDisplayer? = null) : Runnable {
 			world.tick() // tick the world
 			
 //			check if a team has won
-			if (world.win > 0) {
-//				a team has won!
-				if (world.win == 1) {
-					team1.outputHandler.endGame("WIN")
-					team2.outputHandler.endGame("LOOSE")
-				}else {
-					team1.outputHandler.endGame("LOOSE")
-					team2.outputHandler.endGame("WIN")
-				}
-				gameWriter.printWriter.println("WIN ${world.win}") // record their winning
-				break; // end the game
-			}
+			if (world.win > 0) break // they won, exit
 			
 			turnNumber++ // next turn
 			
 		}
 		
-		renderer?.gameOver(world.win) // FIXME: game over doesn't yet show the end of the game!
+		if (world.win > 0) gameWriter.printWriter.println("WIN ${world.win}") // record their winning
+		else gameWriter.printWriter.println("DRAW")
 		
-		if (world.win > 0) {
-			team1.outputHandler.endGame("DRAW")
-			team2.outputHandler.endGame("DRAW")
-			gameWriter.printWriter.println("DRAW") // no one wins :(
-		}
+		team1.outputHandler.endGame(world.win)
+		team2.outputHandler.endGame(world.win)
+		
+		renderer?.gameOver(world.win) // FIXME: game over doesn't yet show the end of the game!
 		
 	}
 	

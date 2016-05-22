@@ -11,7 +11,7 @@ import com.n9mtq4.botserver.world.World
  */
 interface OutputHandler {
 	
-	fun endGame(data: String)
+	fun endGame(data: Int)
 	fun send(bot: Bot, world: World, team: Team)
 	
 }

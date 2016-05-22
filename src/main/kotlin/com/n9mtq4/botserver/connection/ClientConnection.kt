@@ -27,8 +27,6 @@ import java.net.Socket
  * @property input the buffered input
  * @property output the buffered output
  * 
- * @see SocketEncoder
- * @see SocketDecoder
  * @author Will "n9Mtq4" Bresnahan
  */
 class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : InputHandler, OutputHandler {
@@ -83,11 +81,11 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 				
 				line.run { when {
 					
-					matches(MOVE_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.move(it[0], it[1]) }
-					matches(TURN_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.turn(it[0]) }
+					matches(MOVE_REGEX) -> line.getIntArgs().let { bot.move(it[0], it[1]) }
+					matches(TURN_REGEX) -> line.getIntArgs().let { bot.turn(it[0]) }
 					matches(SHOOT_REGEX) -> bot.shoot()
-					matches(PLACE_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.place(it[0], it[1]) }
-					matches(SPAWN_REGEX) -> line.split(" ").drop(1).map { it.toInt() }.let { bot.spawnBot(it[0], it[1]) }
+					matches(PLACE_REGEX) -> line.getIntArgs().let { bot.place(it[0], it[1]) }
+					matches(SPAWN_REGEX) -> line.getIntArgs().let { bot.spawnBot(it[0], it[1]) }
 					matches(END_REGEX) -> return
 					else -> println("Invalid Command from team ${team.teamNumber}: '$line'")
 					
@@ -125,13 +123,16 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 //			make an object for it
 			val visionObj = JSONObject()
 			
-//			SeenWorldObject data
+//			WorldObject traits
 			visionObj.put("type", it.javaClass.simpleName.toUpperCase()) // type
 			visionObj.put("x", it.x) // x
 			visionObj.put("y", it.y) // y
+//			Teamable traits
 			if (it is Teamable) visionObj.put("team", it.teamNum) // team
-			if (it is Entity) visionObj.put("angle", it.angle) // angle
+//			HealthWorldObject traits
 			if (it is HealthWorldObject) visionObj.put("health", it.health) // health
+//			Entity traits
+			if (it is Entity) visionObj.put("angle", it.angle) // angle
 			
 			vision.add(visionObj) // add it to the things we can see
 			
@@ -145,9 +146,11 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 		
 	}
 	
-	override fun endGame(data: String) {
-		write(data)
-	}
+	override fun endGame(data: Int) = write(when (data) {
+		0 -> "DRAW"
+		teamNumber -> "WIN"
+		else -> "LOOSE"
+	})
 	
 	/**
 	 * Reads all the clients actions for this turn.
@@ -174,8 +177,9 @@ class ClientConnection(val teamNumber: Int, val serverSocket: ServerSocket) : In
 		output.flush() // make sure to flush!
 	}
 	
-	fun shouldContinue(line: String): Boolean {
-		return !line.contains("END")
-	}
+	fun shouldContinue(line: String) = !line.contains("END")
 	
 }
+
+private fun String.getIntArgs() = getArgs().map { it.toInt() }
+private fun String.getArgs() = this.split(" ").drop(1)
