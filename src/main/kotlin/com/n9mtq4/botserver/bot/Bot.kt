@@ -4,6 +4,7 @@ import com.n9mtq4.botserver.Team
 import com.n9mtq4.botserver.safeAssert
 import com.n9mtq4.botserver.world.World
 import com.n9mtq4.botserver.world.getDistanceBetween
+import com.n9mtq4.botserver.world.objects.WorldNothing
 import com.n9mtq4.botserver.world.objects.interfaces.Entity
 import com.n9mtq4.botserver.world.objects.interfaces.HealthWorldObject
 import com.n9mtq4.botserver.world.objects.interfaces.Teamable
@@ -47,7 +48,9 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * */
 	@JvmName("generateVision") // fixes the internal. Without it, ClientConnection thinks it is com.n9mtq4.botserver.bot.Bot.generateVision$BotServer_main()Ljava/util/List; 
 	internal fun generateVision(): List<WorldObject> {
-		return world.mapData.filterNot { it.isGhost }.filter { getDistanceBetween(this, it) <= VIEW_DISTANCE }
+		return world.mapData
+				.filterNot { it.isGhost } // you can't see spooky ghosts
+				.filter { getDistanceBetween(this, it) <= VIEW_DISTANCE }
 	}
 	
 	/**
@@ -57,6 +60,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @see Tickable.tick
 	 * */
 	override fun tick() {
+		super.tick() // inherit HealthWorldObject's death condition
 		health += DELTA_BOT_HEALTH
 		if (health > MAX_BOT_HEALTH) health = MAX_BOT_HEALTH // cap the health
 		actionPoints = DEFAULT_ACTION_POINTS // reset the action points
@@ -107,7 +111,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * @see turn
 	 * @see TURN_COST
 	 * */
-	internal fun calcTurn(angle: Int) = Math.ceil(Math.abs(angle / TURN_COST).toDouble()).toInt() // fuck kotlin's number casting
+	internal fun calcTurn(angle: Int) = Math.ceil(Math.abs(angle / TURN_COST).toDouble()).toInt() // fuck kotlin's (lack of) number casting
 	
 	/**
 	 * Turns the [Bot] by [angle] degrees.
@@ -157,6 +161,8 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		if (assertActionPoints(calcShoot())) return
 		
 		val target = world.findObjectUsingRayCasting(x, y, angle) // find the first target
+//		TODO: should I allow friendly fire?
+//		if (target is HealthWorldObject && (target !is Teamable || target.teamNum != teamNum)) target.dealDamage(SHOOT_DAMAGE)
 		if (target is HealthWorldObject) target.dealDamage(SHOOT_DAMAGE) // if we can shoot it, then shoot it
 		
 //		add this to the turn file, so we can see the shot
@@ -187,7 +193,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	 * */
 	fun place(dx: Int, dy: Int) {
 		
-//		mana handling
+//		mana and action point handling
 		if (assertActionManaPoints(calcPlaceAp(dx, dy), calcPlaceMana(dx, dy))) return
 		
 //		place a block - world.placeBlock does checking for a clear space
@@ -201,7 +207,7 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 	@Deprecated("Not yet tested")
 	fun spawnBot(dx: Int, dy: Int) {
 		
-//		mana and ap handling
+//		mana and action point handling
 		if (assertActionManaPoints(calcSpawnBotAp(dx, dy), calcSpawnBotMana(dx, dy))) return
 		
 //		convert to abs coords
@@ -210,9 +216,9 @@ class Bot(override val world: World, val team: Team, override var x: Int, overri
 		
 //		spawn a new bot
 //		world.spawnBotAt does not check for a clear space, so we have to do that
-		val objectAtPos = world.get(x, y)
-		if (objectAtPos.isSolid) return // we can't place it!
-		world.spawnBotAt(x, y, id)
+		val objectAtPos = world[x, y]
+		if (objectAtPos !is WorldNothing) return // we can't place it!
+		world.spawnBotAt(x, y, teamNum)
 		
 	}
 	

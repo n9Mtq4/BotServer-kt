@@ -8,7 +8,7 @@ package com.n9mtq4.botserver.world.objects.interfaces
  * @see WorldObject
  * @author Will "n9Mtq4" Bresnahan
  */
-interface HealthWorldObject : WorldObject {
+interface HealthWorldObject : WorldObject, Tickable {
 	
 	/**
 	 * The health of the [WorldObject]
@@ -18,6 +18,10 @@ interface HealthWorldObject : WorldObject {
 	 * If this [WorldObject] should take damage right now
 	 * */
 	var invincible: Boolean
+	
+	override fun tick() {
+		if (isDead()) world -= this
+	}
 	
 	/**
 	 * Deals [amount] of damage to this

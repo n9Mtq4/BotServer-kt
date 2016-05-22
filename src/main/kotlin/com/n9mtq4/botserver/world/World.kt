@@ -67,7 +67,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * @param teamNumber the team number of the bot
 	 * */
 	fun spawnBotAt(x: Int, y: Int, teamNumber: Int) {
-		set(x, y, createNewBot(x, y, teamNumber))
+		this[x, y] = createNewBot(x, y, teamNumber)
 	}
 	
 	/**
@@ -124,7 +124,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 //				don't include this block
 				continue
 			}
-			if (get(cx, cy) !is WorldNothing) return get(cx, cy)
+			if (get(cx, cy) !is WorldNothing) return this[cx, cy]
 //			update the ray casting location
 			cx += dx
 			cy += dy
@@ -198,15 +198,15 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 //		check for collision
 		if (get(nx, ny).isSolid) return
 		
-		val obj = get(x, y)
+		val obj = this[x, y]
 		
 //		move the world objects pos
 		obj.x = nx
 		obj.y = ny
 		
 //		change the location in the map array of the world object
-		set(nx, ny, obj)
-		set(x, y, WorldNothing(this, x, y))
+		this[nx, ny] = obj
+		this[x, y] = WorldNothing(this, x, y)
 		
 	}
 	
@@ -268,7 +268,7 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 		assertWorldBounds(x, y)
 		
 //		remove it from the world
-		set(x, y, WorldNothing(this, x, y))
+		this[x, y] = WorldNothing(this, x, y)
 		
 	}
 	
@@ -292,7 +292,19 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * */
 	operator fun get(x: Int, y: Int): WorldObject {
 		assertWorldBounds(x, y)
-		return mapData[x + y * width] // convert (x, y) to index
+		return this[x + y * width] // convert (x, y) to index
+	}
+	
+	/**
+	 * Gets the [WorldObject] at [index].
+	 *
+	 * @param index the index in the world
+	 * @return The [WorldObject] at that position
+	 * @see set
+	 * */
+	operator fun get(index: Int): WorldObject {
+		assertTrue(index in 0..mapData.lastIndex, "index out of bounds: $index")
+		return mapData[index]
 	}
 	
 	/**
@@ -317,7 +329,20 @@ class World(val game: Game, val width: Int, val height: Int, generator: WorldGen
 	 * */
 	operator fun set(x: Int, y: Int, obj: WorldObject) {
 		assertWorldBounds(x, y)
-		mapData[x + y * width] = obj // convert (x, y) to index
+		this[x + y * width] = obj // convert (x, y) to index
+	}
+	
+	/**
+	 * Sets the world object at [index] to the new
+	 * [WorldObject] passed as [obj].
+	 *
+	 * @param index the index in the world
+	 * @param obj the new [WorldObject] to put in that position
+	 * @see get
+	 * */
+	operator fun set(index: Int, obj: WorldObject) {
+		assertTrue(index in 0..mapData.lastIndex, "index out of bounds: $index")
+		mapData[index] = obj
 	}
 	
 	/**
